@@ -1,0 +1,15 @@
+main
+    - menu
+    - initialisation
+
+player :
+    - main character
+    - handle deplacement
+    - interaction
+
+env :
+    - map
+
+app :
+    - framerate
+    - connection
