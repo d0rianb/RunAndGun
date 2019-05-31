@@ -12,6 +12,7 @@
 	},
 	"devDependencies": {},
 	"scripts": {
+		"scss": "sass --watch src/style/main.scss dist/main.css",
 		"dev": "NODE_ENV=dev webpack-dev-server --mode=development --hot",
 		"build": "webpack --mode=production",
 		"test": "echo \"Error: no test specified\" && exit 1"

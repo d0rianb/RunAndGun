@@ -1,3 +1,10 @@
+RUN&GUN
+
+A Bro-Force like Game with Mario physic and duo (1v1)
+Mobility abilities : dash, double jump against wall
+
+
+files : {
 main
     - menu
     - initialisation
@@ -9,7 +16,54 @@ player :
 
 env :
     - map
+    - camera
+    - character tracking
+    - Stack (Rendering & Effects)
+    - Assets optimization
 
 app :
     - framerate
     - connection
+    - get & edit config
+    - handle settings
+    - start & restart a game
+}
+
+Physic : 
+    - Matter.js
+
+Rendering :
+    - Stack process
+    - Not Matter.js one
+    - Hard-coded with canvas stuff 
+    - Sprites
+
+Interface : 
+    - Simple but detailed 
+    - Life / ammo / weapon active
+
+Settings :
+    - Keybind (module keydrown)
+
+Audio :
+    - Background music
+
+Graphisme : 
+    - simple
+    - Mario-like
+    - animated-sprite
+
+Network : 
+    - socket.io
+
+Gun part : 
+    - multiple class ?
+    - Weapon switch 
+    - not too much spam
+
+Camera : 
+    - movable ? 
+    - safe-zone
+    - zoom ?
+
+
