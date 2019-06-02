@@ -8,7 +8,7 @@ class Vector {
 	}
 
 	add(other: Vector) {
-		return Vector(this.x + other.x, this.y + other.y)
+		return new Vector(this.x + other.x, this.y + other.y)
 	}
 }
 
@@ -17,20 +17,22 @@ class Object {
 	pos: Vector
 	width: number
 	height: number
-	static: boolean
+	isStatic: boolean
 	weight: number = 1
-	velocity: Vector = Vector(0, 0)
+	velocity: Vector = new Vector(0, 0)
 
-	constructor(id: number, pos: Vector, width: number, height: number, static: boolean, weight: number = 1) {
+	constructor(id: number, pos: Vector, width: number, height: number, isStatic: boolean, weight: number = 1) {
 		this.id = id
 		this.pos = pos
 		this.width = width
 		this.height = height
-		this.static = static
-		this.weight = weight ? !this.static : Infinity
+		this.isStatic = isStatic
+		this.weight = !this.isStatic ? weight : Infinity
 	}
 
 	update() { }
 
 	render() { }
 }
+
+export { Object, Vector }

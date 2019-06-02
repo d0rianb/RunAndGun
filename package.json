@@ -8,9 +8,14 @@
 		"typescript": "^3.5.1",
 		"webpack-cli": "^3.3.2",
 		"webpack-dev-server": "^3.4.1",
-		"webpack": "^4.32.2"
+		"webpack": "^4.32.2",
+		"keydrown": "^1.2.3"
 	},
-	"devDependencies": {},
+	"devDependencies": {
+		"@types/matter-js": "^0.10.0",
+		"@types/node": "^9.6.6",
+		"matter-js": "^0.14.2"
+	},
 	"scripts": {
 		"scss": "sass --watch src/style/main.scss dist/main.css",
 		"dev": "NODE_ENV=dev webpack-dev-server --mode=development --hot",
