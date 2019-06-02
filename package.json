@@ -4,16 +4,17 @@
 	"description": "",
 	"main": "index.js",
 	"dependencies": {
+		"@types/node": "^9.6.49",
+		"keydrown": "^1.2.3",
 		"ts-loader": "^6.0.1",
 		"typescript": "^3.5.1",
+		"webpack": "^4.32.2",
 		"webpack-cli": "^3.3.2",
 		"webpack-dev-server": "^3.4.1",
-		"webpack": "^4.32.2",
-		"keydrown": "^1.2.3"
+		"webpack-node-externals": "^1.7.2"
 	},
 	"devDependencies": {
 		"@types/matter-js": "^0.10.0",
-		"@types/node": "^9.6.6",
 		"matter-js": "^0.14.2"
 	},
 	"scripts": {

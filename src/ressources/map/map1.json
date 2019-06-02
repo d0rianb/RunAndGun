@@ -1,0 +1,15 @@
+{
+	"name": "Map 1",
+	"dimensions": {
+		"width": "fill",
+		"height": "fill"
+	},
+	"grid": {
+		"width": "16",
+		"height": "9"
+	},
+	"objects": [
+        "rect 2 5 1 3"
+    ]
+
+}

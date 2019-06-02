@@ -1,12 +1,14 @@
 const path = require('path')
+const fs = require('fs');
+const nodeExternals = require('webpack-node-externals')
 const dev = process.env.NODE_ENV === "dev"
 
-let config = {
+const config = {
 	entry: ['./src/main.ts'],
 	output: {
 		filename: 'bundle.js',
 		path: path.resolve(__dirname, 'dist'),
-		publicPath: '/dist/'
+		publicPath: 'dist/'
 	},
 	devtool: dev ? 'eval-source-map' : false,
 	devServer: {
@@ -45,6 +47,8 @@ let config = {
 			}
 		]
 	},
+	externals: [nodeExternals()],
+	node: { fs: 'empty' },
 	plugins: []
 };
 
