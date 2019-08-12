@@ -1,9 +1,9 @@
 import * as Matter from 'matter-js'
-import { Vector, Object } from './object'
+import { Vector, SolidObject } from './object'
 import { Map } from './map'
-import { DOMEvent } from './events.ts'
+import { DOMEvent } from './events'
 
-import { default as colors } from './ressources/colors.json'
+import { default as colors } from '../ressources/config/colors.json'
 
 class Env {
 	public canvas: HTMLCanvasElement
@@ -35,7 +35,7 @@ class Env {
 	initSize(): void {
 		[this.width, this.height] = this.getWindowDimensions();
 		[this.canvas.width, this.canvas.height] = [this.width, this.height];
-		this.canvas.style.backgroundColor = colors.canvasBackground
+		// this.canvas.style.backgroundColor = colors.canvasBackground
 		document.querySelector('main').appendChild(this.canvas)
 	}
 

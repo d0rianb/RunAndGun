@@ -1,24 +1,32 @@
-import { Object } from './object'
-import * as fs from 'fs'
-import * as path from 'path'
+import { SolidObject } from './object'
+import path from 'path'
 
-/*
-* fs ne marche pas avec TypeScript : impssible de récupérer map1.json
-*/
+interface SizeObject {
+	width: string,
+	height: string
+}
+
+interface MapFile {
+	name: string,
+	dimensions: SizeObject,
+	grid: SizeObject,
+	objects: Array<string>
+}
 
 class Map {
-	public objects: Array<Object>
-	private filename: string
+	public objects: Array<SolidObject>
+	private file: MapFile
 
-	constructor(filename: string) {
-		this.filename = filename
-		console.log(fs)
-		// const fileContent = fs.readFileSync(this.filename, { encoding: 'utf8', flag: 'r' })
-		// console.log(JSON.parse(fileContent))
+	constructor(file: MapFile) {
+		this.file = file
 
 		// TODO : recuperer les objects, calculer leurs tailles relatives, puis leur taille absolue et
 		// la communiquer à l'Env; uniquement la taille absolue changera lorsque la fenetre sera redimensionnée
+	}
 
+	parseData(json: JSON): Array<SolidObject | any> {
+		console.log(json)
+		return []
 	}
 }
 

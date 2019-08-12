@@ -12,7 +12,7 @@ class Vector {
 	}
 }
 
-class Object {
+class SolidObject { // extends from Matter object ?
 	id: number
 	pos: Vector
 	width: number
@@ -35,4 +35,4 @@ class Object {
 	render() { }
 }
 
-export { Object, Vector }
+export { SolidObject, Vector }

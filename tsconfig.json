@@ -1,23 +1,22 @@
 {
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"resolveJsonModule": true,
+		"outDir": "dist/",
+		"module": "commonjs",
+		"moduleResolution": "node",
 		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"strict": false,
-		"module": "esnext",
-		"moduleResolution": "node",
-		"lib": [
-	      "dom",
-	      "es2017"
-	    ],
-
 		"target": "es5",
-		"jsx": "react",
-		"allowJs": true
+		"allowJs": true,
 	},
+	"include": [
+        "src/**/*"
+    ],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"ressources"
 	]
 }

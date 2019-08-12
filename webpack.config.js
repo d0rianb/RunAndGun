@@ -1,21 +1,26 @@
+const fs = require('fs')
 const path = require('path')
-const fs = require('fs');
-const nodeExternals = require('webpack-node-externals')
+const webpack = require('webpack')
+
 const dev = process.env.NODE_ENV === "dev"
 
-const config = {
+let config = {
 	entry: ['./src/main.ts'],
 	output: {
-		filename: 'bundle.js',
 		path: path.resolve(__dirname, 'dist'),
-		publicPath: 'dist/'
+		publicPath: 'dist/',
+		filename: '[name].bundle.js'
 	},
+	context: __dirname,
 	devtool: dev ? 'eval-source-map' : false,
 	devServer: {
 		hot: true,
 		noInfo: true
 	},
 	watch: dev,
+	resolve: {
+		extensions: ['.ts', '.js', '.json']
+	},
 	module: {
 		rules: [{
 				test: /\.css$/,
@@ -41,14 +46,22 @@ const config = {
 				]
 			},
 			{
-				test: /\.tsx?$/,
+				test: /\.ts$/,
 				use: 'ts-loader',
 				exclude: /node_modules/
+			},
+			{
+				test: /\.js$/,
+				loader: 'babel-loader',
+				exclude: /node_modules/
+			},
+			{
+				test: /\.txt$/i,
+				use: 'raw-loader',
 			}
 		]
 	},
-	externals: [nodeExternals()],
-	node: { fs: 'empty' },
+	target: 'web',
 	plugins: []
 };
 

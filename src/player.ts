@@ -1,6 +1,6 @@
-import { Object, Vector } from './object'
+import { SolidObject, Vector } from './object'
 
-class Player extends Object {
+class Player extends SolidObject {
 	id: number
 	name: string
 	pos: Vector
