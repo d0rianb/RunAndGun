@@ -14,6 +14,7 @@ class Vector {
 
 class SolidObject { // extends from Matter object ?
 	id: number
+	type: string
 	pos: Vector
 	width: number
 	height: number
@@ -21,8 +22,9 @@ class SolidObject { // extends from Matter object ?
 	weight: number = 1
 	velocity: Vector = new Vector(0, 0)
 
-	constructor(id: number, pos: Vector, width: number, height: number, isStatic: boolean, weight: number = 1) {
+	constructor(id: number, type: string, pos: Vector, width: number, height: number, isStatic: boolean, weight: number = 1) {
 		this.id = id
+		this.type = type
 		this.pos = pos
 		this.width = width
 		this.height = height
@@ -35,4 +37,28 @@ class SolidObject { // extends from Matter object ?
 	render() { }
 }
 
-export { SolidObject, Vector }
+class RelativeObject {
+	id: number
+	type: string
+	x: number
+	y: number
+	width: number
+	height: number
+	constructor(id: number, type: string, x: string, y: string, width: string, height: string) {
+		this.id = id
+		this.type = type
+		this.x = parseInt(x)
+		this.y = parseInt(y)
+		this.width = parseInt(width)
+		this.height = parseInt(height)
+	}
+
+	toSolid(object: RelativeObject, env: object): SolidObject | any {
+
+	}
+
+
+}
+
+
+export { SolidObject, RelativeObject, Vector }

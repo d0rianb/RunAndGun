@@ -1,5 +1,5 @@
 import * as Matter from 'matter-js'
-import { Vector, SolidObject } from './object'
+import { Vector, SolidObject, RelativeObject } from './object'
 import { Map } from './map'
 import { DOMEvent } from './events'
 import { Renderer, RenderObject } from './render'

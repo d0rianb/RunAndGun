@@ -9,6 +9,7 @@
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"strict": false,
+		"downlevelIteration": true,
 		"target": "es5",
 		"allowJs": true,
 	},
