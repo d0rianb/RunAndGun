@@ -1,5 +1,5 @@
 import * as Matter from 'matter-js'
-import { Vector, SolidObject, RelativeObject } from './object'
+import { Vector, SolidObject } from './object'
 import { Map } from './map'
 import { DOMEvent } from './events'
 import { Renderer, RenderObject } from './render'
@@ -10,6 +10,10 @@ class Env {
 	public ctx: CanvasRenderingContext2D
 	public width: number = 0
 	public height: number = 0
+	public gridWidth: number
+	public gridHeight: number
+	public oldRelToAbs: Vector
+	public relToAbs: Vector
 	public map: Map
 	public engine: Matter.Engine  // Matter.js Engine
 	public world: Matter.World  // Matter.js World
@@ -18,17 +22,29 @@ class Env {
 	private scale: number = 1
 	private timescale: number = 1
 	public framerate: number = 60  // fps
+	public objects: SolidObject[]
 	private renderingStack: Array<RenderObject>
 
 	constructor(canvas: HTMLCanvasElement, map: Map, engine: Matter.Engine) {
 		this.canvas = canvas
 		this.ctx = canvas.getContext('2d')
 		this.map = map
+		this.gridWidth = map.grid.width
+		this.gridHeight = map.grid.height
+
 		this.engine = engine
 		this.world = this.engine.world
+		this.objects = []
 		this.renderingStack = []
-		this.events.push(new DOMEvent('resize', () => this.initSize()))
-		this.initSize()
+		this.events.push(new DOMEvent('resize', () => this.resize()))
+		this.sizeCanvas()
+		this.relToAbs = {
+			x: this.width / this.gridWidth,
+			y: this.height / this.gridHeight
+		}
+		this.oldRelToAbs = new Vector(0, 0)
+		Object.assign(this.oldRelToAbs, this.relToAbs)
+		this.init()
 	}
 
 	getWindowDimensions(): any[] {
@@ -36,16 +52,48 @@ class Env {
 		return [html.clientWidth, html.clientHeight]
 	}
 
-	initSize(): void {
+	sizeCanvas(): void {
 		[this.width, this.height] = this.getWindowDimensions();
 		[this.canvas.width, this.canvas.height] = [this.width, this.height];
 		this.canvas.style.backgroundColor = colors.canvasBackground
 		document.querySelector('main').appendChild(this.canvas)
 	}
 
+	resize(): void {
+		this.sizeCanvas()
+		this.relToAbs = {
+			x: this.width / this.gridWidth,
+			y: this.height / this.gridHeight
+		}
+		for (let obj of this.objects) {
+			obj.resize()
+		}
+		Object.assign(this.oldRelToAbs, this.relToAbs)
+	}
+
+	init(): void {
+		this.objects = []
+		Matter.World.clear(this.world, false)
+		for (let objString of this.map.objects) {
+			let objArray: Array<string> = objString.split(' ')
+			let isStatic: boolean = objArray.length < 5
+			let solidObj: SolidObject = new SolidObject(
+				objArray[0],
+				parseInt(objArray[1]),
+				parseInt(objArray[2]),
+				parseInt(objArray[3]),
+				parseInt(objArray[4]),
+				isStatic, this)
+		}
+	}
+
 	changeTimeScale(timescale: number): void {
 		this.timescale = timescale
 		this.engine.timing.timeScale = this.timescale
+	}
+
+	addToRenderingQueue(object: RenderObject): void {
+		this.renderingStack.push(object)
 	}
 
 	update(): void {
@@ -56,9 +104,17 @@ class Env {
 	}
 
 	render(): void {
-		if (this.tick % 20 == 0) {
-			// console.log(this.canvas.width, this.canvas.height)
-		}
+		if (this.tick % 100 === 0) { }
+		this.renderingStack = []
+
+		// Map render
+		this.objects.forEach(obj => {
+			let renderObj = obj.toRender()
+			if (renderObj) {
+				this.addToRenderingQueue(<RenderObject>renderObj)
+			}
+		})
+
 		for (let object of this.renderingStack) {
 			Renderer.render(this.ctx, object)
 		}

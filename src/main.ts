@@ -3,6 +3,7 @@ import * as Matter from 'matter-js'
 
 import { Env } from './env'
 import { Map } from './map'
+import { Player } from './player'
 
 import { default as map1_file } from '../ressources/map/map1.json'
 
@@ -17,5 +18,6 @@ const engine: Matter.Engine = Matter.Engine.create({
 const map1: Map = new Map(map1_file)
 
 let env = new Env(canvas, map1, engine)
+let player: Player = new Player('Dorian', 12, 7, 2, 5, env)
 
 env.update()

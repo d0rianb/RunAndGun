@@ -1,3 +1,8 @@
+import * as Matter from 'matter-js'
+import { Env } from './env'
+import { Map } from './map'
+import { RenderObject } from './render'
+
 class Vector {
 	x: number
 	y: number
@@ -6,30 +11,71 @@ class Vector {
 		this.x = x
 		this.y = y
 	}
-
-	add(other: Vector) {
-		return new Vector(this.x + other.x, this.y + other.y)
-	}
 }
 
-class SolidObject { // extends from Matter object ?
+class SolidObject {
 	id: number
 	type: string
 	pos: Vector
 	width: number
 	height: number
 	isStatic: boolean
-	weight: number = 1
-	velocity: Vector = new Vector(0, 0)
+	body: Matter.Body
+	env: Env
+	grid_width: number
+	grid_height: number
 
-	constructor(id: number, type: string, pos: Vector, width: number, height: number, isStatic: boolean, weight: number = 1) {
-		this.id = id
+	/* Initalize the object with relative position and size */
+	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env) {
 		this.type = type
-		this.pos = pos
-		this.width = width
-		this.height = height
 		this.isStatic = isStatic
-		this.weight = !this.isStatic ? weight : Infinity
+		this.env = env
+
+		this.pos = new Vector(grid_x * this.env.relToAbs.x, grid_y * this.env.relToAbs.y)
+		this.width = grid_width * this.env.relToAbs.x
+		this.height = grid_height * this.env.relToAbs.y
+
+		this.grid_width = grid_width
+		this.grid_height = grid_height
+
+		switch (this.type) {
+			case 'rect':
+				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, { isStatic: this.isStatic })
+				this.id = this.body.id
+				break
+		}
+		this.env.objects.push(this)
+		Matter.World.add(this.env.world, this.body)
+		console.log(this)
+	}
+
+	resize(): void {
+		switch (this.type) {
+			case 'rect':
+				let new_x: number = this.body.position.x / this.env.oldRelToAbs.x * this.env.relToAbs.x
+				let new_y: number = this.body.position.y / this.env.oldRelToAbs.y * this.env.relToAbs.y
+				this.body = Matter.Bodies.rectangle(
+					new_x,
+					new_y,
+					this.grid_width * this.env.relToAbs.x,
+					this.grid_height * this.env.relToAbs.y,
+					{ isStatic: this.isStatic })
+				break
+		}
+	}
+
+	toRender(): RenderObject | boolean {
+		if (this.body.render.visible) {
+			let { min, max } = <any>this.body.bounds
+			return new RenderObject(
+				this.type,
+				this.body.position.x,
+				this.body.position.y,
+				max.x - min.x,
+				max.y - min.y
+			)
+		}
+		return false
 	}
 
 	update() { }
@@ -37,28 +83,4 @@ class SolidObject { // extends from Matter object ?
 	render() { }
 }
 
-class RelativeObject {
-	id: number
-	type: string
-	x: number
-	y: number
-	width: number
-	height: number
-	constructor(id: number, type: string, x: string, y: string, width: string, height: string) {
-		this.id = id
-		this.type = type
-		this.x = parseInt(x)
-		this.y = parseInt(y)
-		this.width = parseInt(width)
-		this.height = parseInt(height)
-	}
-
-	toSolid(object: RelativeObject, env: object): SolidObject | any {
-
-	}
-
-
-}
-
-
-export { SolidObject, RelativeObject, Vector }
+export { SolidObject, Vector }
