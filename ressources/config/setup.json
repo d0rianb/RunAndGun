@@ -1,10 +1,10 @@
 {
 	"player_name": "Player 1",
 	"keybind": {
-		"move_forward": "D",
-		"move_backward": "Q",
-		"jump": ["Z", "SPACE"],
-		"crouch": "S",
+		"move_forward": ["D", "RIGHT"],
+		"move_backward": ["Q", "LEFT"],
+		"jump": ["Z", "SPACE", "UP"],
+		"crouch": ["S", "DOWN"],
 		"dash": "SHIFT",
 		"reload": "R"
 	}

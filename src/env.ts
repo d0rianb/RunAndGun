@@ -18,6 +18,7 @@ class Env {
 	public engine: Matter.Engine  // Matter.js Engine
 	public world: Matter.World  // Matter.js World
 	public events: Array<DOMEvent> = []
+	public cursorPosition: Vector
 	private tick: number = 0
 	private scale: number = 1
 	private timescale: number = 1
@@ -37,6 +38,7 @@ class Env {
 		this.objects = []
 		this.renderingStack = []
 		this.events.push(new DOMEvent('resize', () => this.resize()))
+		this.events.push(new DOMEvent('mousemove', e => { this.cursorPosition = this.getCursorPosition(e) }))
 		this.sizeCanvas()
 		this.relToAbs = {
 			x: this.width / this.gridWidth,
@@ -94,6 +96,14 @@ class Env {
 	changeTimeScale(timescale: number): void {
 		this.timescale = timescale
 		this.engine.timing.timeScale = this.timescale
+	}
+
+	getCursorPosition(evt: any): Vector {
+		const rect = this.canvas.getBoundingClientRect()
+		return new Vector(
+			evt.clientX - rect.left,
+			evt.clientY - rect.top
+		)
 	}
 
 	addToRenderingStack(object: RenderObject): void {

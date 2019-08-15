@@ -26,7 +26,7 @@ class SolidObject {
 	grid_height: number
 
 	/* Initalize the object with relative position and size */
-	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env) {
+	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, ...options) {
 		this.type = type
 		this.isStatic = isStatic
 		this.env = env
@@ -40,7 +40,7 @@ class SolidObject {
 
 		switch (this.type) {
 			case 'rect':
-				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, { isStatic: this.isStatic })
+				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
 				this.id = this.body.id
 				break
 		}

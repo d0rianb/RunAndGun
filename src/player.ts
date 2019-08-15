@@ -1,6 +1,7 @@
 import * as Matter from 'matter-js'
 import * as kd from 'keydrown'
 import { SolidObject, Vector } from './object'
+import { Env } from './Env'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -57,15 +58,15 @@ const KEY_MAP = {
 class Player extends SolidObject {
 	id: number
 	name: string
+	cursor: Vector
 	texture: string
 	direction: string
 
-	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env) {
-		super('rect', grid_x, grid_y, grid_width, grid_height, false, env)
+	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env, ...options) {
+		super('rect', grid_x, grid_y, grid_width, grid_height, false, env, ...options)
 		this.name = name
+		this.cursor = this.env.cursorPosition
 		this.initSetup(setup)
-
-		this.initSetup
 	}
 
 	initSetup(setup): void {
@@ -86,13 +87,13 @@ class Player extends SolidObject {
 		let kd_key = KEY_MAP[value]
 		switch (key) {
 			case 'move_forward':
-				kd_key.down(() => console.log('d'))
+				kd_key.down(() => this.move({ x: .01, y: 0 }))
 				break
 			case 'move_backward':
-				kd_key.down(() => console.log('q'))
+				kd_key.down(() => this.move({ x: -.01, y: 0 }))
 				break
 			case 'jump':
-				kd_key.down(() => console.log('z'))
+				kd_key.down(() => this.move({ x: 0, y: -.01 }))
 				break
 			case 'crouch':
 				kd_key.down(() => console.log('s'))
@@ -107,7 +108,9 @@ class Player extends SolidObject {
 		}
 	}
 
-	update(): void { }
+	update(): void {
+		this.cursor = this.env.cursorPosition
+	}
 
 	render(): void { }
 }

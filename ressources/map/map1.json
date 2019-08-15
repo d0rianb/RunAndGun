@@ -10,8 +10,8 @@
 	},
 	"objects": [
         "rect 0 17 28 1 static",
-        "rect 2 5 2 1",
-        "rect 22 5 2 1"
+        "rect 2 5 2 1 static",
+        "rect 22 5 2 1 static"
     ]
 
 }
