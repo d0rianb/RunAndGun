@@ -31,9 +31,9 @@ class SolidObject {
 		this.isStatic = isStatic
 		this.env = env
 
-		this.pos = new Vector(grid_x * this.env.relToAbs.x, grid_y * this.env.relToAbs.y)
 		this.width = grid_width * this.env.relToAbs.x
 		this.height = grid_height * this.env.relToAbs.y
+		this.pos = new Vector(grid_x * this.env.relToAbs.x + this.width / 2, grid_y * this.env.relToAbs.y + this.height / 2)
 
 		this.grid_width = grid_width
 		this.grid_height = grid_height
@@ -47,6 +47,11 @@ class SolidObject {
 		this.env.objects.push(this)
 		Matter.World.add(this.env.world, this.body)
 		console.log(this)
+	}
+
+	move(vec: Vector): void {
+		Matter.Body.applyForce(this.body, { x: this.body.position.x, y: this.body.position.y }, vec)
+		// TEST : Matter.Composite.translate(this.body, vec)
 	}
 
 	resize(): void {
@@ -77,10 +82,6 @@ class SolidObject {
 		}
 		return false
 	}
-
-	update() { }
-
-	render() { }
 }
 
 export { SolidObject, Vector }

@@ -25,14 +25,14 @@ class Env {
 	public objects: SolidObject[]
 	private renderingStack: Array<RenderObject>
 
-	constructor(canvas: HTMLCanvasElement, map: Map, engine: Matter.Engine) {
+	constructor(canvas: HTMLCanvasElement, map: Map) {
 		this.canvas = canvas
 		this.ctx = canvas.getContext('2d')
 		this.map = map
 		this.gridWidth = map.grid.width
 		this.gridHeight = map.grid.height
 
-		this.engine = engine
+		this.engine = Matter.Engine.create({ enableSleeping: false })
 		this.world = this.engine.world
 		this.objects = []
 		this.renderingStack = []
@@ -44,6 +44,7 @@ class Env {
 		}
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
+		Matter.Engine.run(this.engine)
 		this.init()
 	}
 
@@ -53,10 +54,13 @@ class Env {
 	}
 
 	sizeCanvas(): void {
+		const dpr: number = window.devicePixelRatio || 1;
 		[this.width, this.height] = this.getWindowDimensions();
-		[this.canvas.width, this.canvas.height] = [this.width, this.height];
+		[this.canvas.width, this.canvas.height] = [this.width * dpr, this.height * dpr];
+		[this.canvas.style.width, this.canvas.style.height] = [this.width + 'px', this.height + 'px'];
 		this.canvas.style.backgroundColor = colors.canvasBackground
 		document.querySelector('main').appendChild(this.canvas)
+		this.ctx.scale(dpr, dpr);
 	}
 
 	resize(): void {
@@ -76,7 +80,7 @@ class Env {
 		Matter.World.clear(this.world, false)
 		for (let objString of this.map.objects) {
 			let objArray: Array<string> = objString.split(' ')
-			let isStatic: boolean = objArray.length < 5
+			let isStatic: boolean = objArray.length > 5
 			let solidObj: SolidObject = new SolidObject(
 				objArray[0],
 				parseInt(objArray[1]),
@@ -92,29 +96,29 @@ class Env {
 		this.engine.timing.timeScale = this.timescale
 	}
 
-	addToRenderingQueue(object: RenderObject): void {
+	addToRenderingStack(object: RenderObject): void {
 		this.renderingStack.push(object)
 	}
 
 	update(): void {
-		this.tick++
-		Matter.Engine.update(this.engine, 1 / this.framerate)
+		if (this.tick === 2) { }
 		this.render()
+		this.tick++
 		requestAnimationFrame(() => this.update())
 	}
 
 	render(): void {
-		if (this.tick % 100 === 0) { }
 		this.renderingStack = []
 
 		// Map render
 		this.objects.forEach(obj => {
-			let renderObj = obj.toRender()
+			let renderObj: RenderObject | boolean = obj.toRender()
 			if (renderObj) {
-				this.addToRenderingQueue(<RenderObject>renderObj)
+				this.addToRenderingStack(<RenderObject>renderObj)
 			}
 		})
 
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 		for (let object of this.renderingStack) {
 			Renderer.render(this.ctx, object)
 		}
