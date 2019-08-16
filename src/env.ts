@@ -1,5 +1,6 @@
 import * as Matter from 'matter-js'
 import { Vector, SolidObject } from './object'
+import { Player } from './player'
 import { Map } from './map'
 import { DOMEvent } from './events'
 import { Renderer, RenderObject } from './render'
@@ -16,6 +17,7 @@ class Env {
 	public relToAbs: Vector
 	public map: Map
 	public engine: Matter.Engine  // Matter.js Engine
+	public engineRunner: Matter.Runner
 	public world: Matter.World  // Matter.js World
 	public events: Array<DOMEvent> = []
 	public cursorPosition: Vector
@@ -24,6 +26,7 @@ class Env {
 	private timescale: number = 1
 	public framerate: number = 60  // fps
 	public objects: SolidObject[]
+	public players: Player[]
 	private renderingStack: Array<RenderObject>
 
 	constructor(canvas: HTMLCanvasElement, map: Map) {
@@ -33,12 +36,16 @@ class Env {
 		this.gridWidth = map.grid.width
 		this.gridHeight = map.grid.height
 
-		this.engine = Matter.Engine.create({ enableSleeping: false })
+		this.engine = Matter.Engine.create({ enableSleeping: true })
+		this.engineRunner = Matter.Runner.create({})
 		this.world = this.engine.world
+		this.world.gravity.scale = 0.0014
+		this.players = []
 		this.objects = []
 		this.renderingStack = []
+		this.cursorPosition = new Vector(0, 0)
 		this.events.push(new DOMEvent('resize', () => this.resize()))
-		this.events.push(new DOMEvent('mousemove', e => { this.cursorPosition = this.getCursorPosition(e) }))
+		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
 		this.sizeCanvas()
 		this.relToAbs = {
 			x: this.width / this.gridWidth,
@@ -46,7 +53,7 @@ class Env {
 		}
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
-		Matter.Engine.run(this.engine)
+		// Matter.Engine.run(this.engine)
 		this.init()
 	}
 
@@ -74,6 +81,9 @@ class Env {
 		for (let obj of this.objects) {
 			obj.resize()
 		}
+		for (let player of this.players) {
+			player.resize()
+		}
 		Object.assign(this.oldRelToAbs, this.relToAbs)
 	}
 
@@ -89,7 +99,13 @@ class Env {
 				parseInt(objArray[2]),
 				parseInt(objArray[3]),
 				parseInt(objArray[4]),
-				isStatic, this)
+				isStatic,
+				this,
+				<Matter.IBodyDefinition>{
+					label: 'Wall',
+					friction: 0.5,
+					frictionStatic: 0.01
+				})
 		}
 	}
 
@@ -98,9 +114,9 @@ class Env {
 		this.engine.timing.timeScale = this.timescale
 	}
 
-	getCursorPosition(evt: any): Vector {
+	updateCursorPosition(evt: any) {
 		const rect = this.canvas.getBoundingClientRect()
-		return new Vector(
+		this.cursorPosition = new Vector(
 			evt.clientX - rect.left,
 			evt.clientY - rect.top
 		)
@@ -111,7 +127,10 @@ class Env {
 	}
 
 	update(): void {
-		if (this.tick === 2) { }
+		// Matter.Engine.update(this.engine, 1 / this.framerate)
+		Matter.Runner.tick(this.engineRunner, this.engine, 1 / this.framerate)
+		this.objects.forEach(obj => obj.update())
+		this.players.forEach(player => player.update())
 		this.render()
 		this.tick++
 		requestAnimationFrame(() => this.update())
@@ -128,9 +147,19 @@ class Env {
 			}
 		})
 
+		// Player render
+		this.players.forEach(player => {
+			let renderObj: RenderObject[] = player.toRender()
+			if (renderObj) {
+				renderObj.forEach(obj => {
+					this.addToRenderingStack(<RenderObject>obj)
+				})
+			}
+		})
+
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 		for (let object of this.renderingStack) {
-			Renderer.render(this.ctx, object)
+			Renderer.render(this.ctx, object, true)
 		}
 	}
 }

@@ -1,6 +1,9 @@
 /* Run&Gun v0.0.1-dev
 * Author : D0rian <dorian.beauchesne@icloud.com>
 * NOTE: https://github.com/landgreen/n-gon/blob/master/js/player.js
+* TODO:
+*     - Collisions filter and stuff
+*     - interrest in Matter.Runner
 */
 
 import * as Matter from 'matter-js'
@@ -19,10 +22,10 @@ const map1: Map = new Map(map1_file)
 
 let env: Env = new Env(canvas, map1)
 let player: Player = new Player('Dorian', 12, 7, 1, 2, env, {
-	inertia: Infinity,
-	friction: 0.002,
-	frictionAir: 0.001,
-	restitution: 0,
+	label: 'Player',
+	mass: 10,
+	friction: .04,
+	restitution: .01,
 	sleepThreshold: Infinity,
 })
 

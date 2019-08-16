@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js'
 import { Env } from './env'
 import { Map } from './map'
-import { RenderObject } from './render'
+import { RenderObject, RenderOptions } from './render'
 
 class Vector {
 	x: number
@@ -17,6 +17,7 @@ class SolidObject {
 	id: number
 	type: string
 	pos: Vector
+	velovity: Vector
 	width: number
 	height: number
 	isStatic: boolean
@@ -26,7 +27,7 @@ class SolidObject {
 	grid_height: number
 
 	/* Initalize the object with relative position and size */
-	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, ...options) {
+	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, options?: Matter.IBodyDefinition) {
 		this.type = type
 		this.isStatic = isStatic
 		this.env = env
@@ -34,6 +35,7 @@ class SolidObject {
 		this.width = grid_width * this.env.relToAbs.x
 		this.height = grid_height * this.env.relToAbs.y
 		this.pos = new Vector(grid_x * this.env.relToAbs.x + this.width / 2, grid_y * this.env.relToAbs.y + this.height / 2)
+		this.velovity = new Vector(0, 0)
 
 		this.grid_width = grid_width
 		this.grid_height = grid_height
@@ -76,11 +78,18 @@ class SolidObject {
 				this.type,
 				this.body.position.x,
 				this.body.position.y,
-				max.x - min.x,
-				max.y - min.y
+				<RenderOptions>{
+					width: max.x - min.x,
+					height: max.y - min.y
+				}
 			)
 		}
 		return false
+	}
+
+	update(): void {
+		this.pos = <Vector>this.body.position
+		this.velovity = <Vector>this.body.velocity
 	}
 }
 
