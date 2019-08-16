@@ -12,6 +12,7 @@
         "rect 0 17 28 1 static name=floor",
         "rect 2 10 2 1 static",
         "rect 22 10 2 1 static",
+		"rect 18 5 1 10 static",
         "rect 0 15 1 2 static name=left_block",
         "rect 27 15 1 2 static name=right_block"
     ]

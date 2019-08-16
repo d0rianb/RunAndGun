@@ -56,6 +56,8 @@ const KEY_MAP = {
 	'TILDE': kd.TILDE2
 }
 const MAX_SPEED = 14
+const FRICTION = 0.0015
+const WALL_SLIDE_FRICTION = 0.15
 
 class Player {
 	name: string
@@ -78,6 +80,7 @@ class Player {
 	stoppingFriction: number
 	jumpForce: number
 	onAir: boolean
+	wallSlide: boolean
 	nbJump: number
 	isMoving: boolean
 
@@ -111,7 +114,7 @@ class Player {
 		this.body = Matter.Body.create({
 			parts: [playerBody, playerHead, this.jumpSensor],
 			inertia: Infinity,
-			friction: 0.0015,
+			friction: FRICTION,
 			frictionAir: 0.018,
 			frictionStatic: 0.8,
 			restitution: 0.12,
@@ -132,6 +135,7 @@ class Player {
 		this.stoppingFriction = 0.80
 		this.onAir = false
 		this.isMoving = false
+		this.wallSlide = false
 		this.nbJump = 0
 
 		Matter.Body.setMass(this.body, this.mass)
@@ -185,15 +189,15 @@ class Player {
 		if (this.body.speed <= MAX_SPEED) {
 			if (side === 'left') {
 				if (this.onAir) {
-					this.body.force.x -= this.airForce * .5
+					this.body.force.x = -this.airForce
 				} else {
-					this.body.force.x = this.groundForce * -1.5
+					this.body.force.x = -this.groundForce
 				}
 			} else if (side === 'right') {
 				if (this.onAir) {
-					this.body.force.x += this.airForce * .5
+					this.body.force.x = this.airForce
 				} else {
-					this.body.force.x = this.groundForce * 1.5
+					this.body.force.x = this.groundForce
 				}
 			}
 		}
@@ -279,7 +283,8 @@ class Player {
 				`speed: ${this.body.speed.toFixed(3)}`,
 				`velocity: {x: ${this.body.velocity.x.toFixed(3)}, y: ${this.body.velocity.y.toFixed(3)}}`,
 				`position: {x: ${this.body.position.x.toFixed(3)}, y: ${this.body.position.y.toFixed(3)}}`,
-				`onAir: ${this.onAir}`
+				`onAir: ${this.onAir}`,
+				`wallSlide: ${this.wallSlide}`,
 			]
 		})
 		renderObjects.push(debugText)
@@ -288,12 +293,25 @@ class Player {
 
 	update(): void {
 		this.lookAtCursor(this.env.cursorPosition)
+		/* Colision Detection */
 		this.onAir = this.env.objects.filter(obj => {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 0
 		}).length === 0
+		this.wallSlide = this.env.objects.filter(obj => {
+			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
+			return collision.collided && collision.axisNumber === 1
+		}).length !== 0 && this.body.velocity.y > 0
+
+		/* Colision consequences*/
 		if (!this.onAir) this.onGround()
-		// if (this.body.velocity.y > 0) this.body.velocity.y *= 2.1
+		if (this.wallSlide) {
+			this.body.friction = WALL_SLIDE_FRICTION
+			this.nbJump = 1
+		} else {
+			this.body.friction = FRICTION
+		}
+
 		if ((!this.isMoving || this.body.speed > MAX_SPEED) && !this.onAir) {
 			Matter.Body.setVelocity(this.body, {
 				x: this.body.velocity.x * this.stoppingFriction,
