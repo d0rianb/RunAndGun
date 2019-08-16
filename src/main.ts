@@ -21,12 +21,6 @@ const ctx: CanvasRenderingContext2D = canvas.getContext('2d')
 const map1: Map = new Map(map1_file)
 
 let env: Env = new Env(canvas, map1)
-let player: Player = new Player('Dorian', 12, 7, 1, 2, env, {
-	label: 'Player',
-	mass: 10,
-	friction: .04,
-	restitution: .01,
-	sleepThreshold: Infinity,
-})
+let player: Player = new Player('Dorian', 12, 7, 1, 2, env)
 
 env.update()

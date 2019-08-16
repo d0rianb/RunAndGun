@@ -39,7 +39,7 @@ class Env {
 		this.engine = Matter.Engine.create({ enableSleeping: true })
 		this.engineRunner = Matter.Runner.create({})
 		this.world = this.engine.world
-		this.world.gravity.scale = 0.0014
+		this.world.gravity.scale = 0.0019
 		this.players = []
 		this.objects = []
 		this.renderingStack = []
