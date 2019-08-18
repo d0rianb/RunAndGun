@@ -97,10 +97,10 @@ class Player {
 		this.grid_width = grid_width
 		this.grid_height = grid_height
 
-		const headOffsetY = this.width * 3 / 5
-		const playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - headOffsetY, this.width / 2, { label: 'PlayerCircle' })
-		const playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headOffsetY, this.width, this.height - headOffsetY, { label: 'PlayerRect' })
-		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2 + 10, this.width, 15, {
+		const headY = this.height * 1 / 10
+		const playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
+		const playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
+		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 15, {
 			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
 			label: 'PlayerRect',
@@ -128,8 +128,8 @@ class Player {
 
 		console.log(this)
 
-		this.groundForce = 0.015 // run force on ground
-		this.airForce = 0.013    // run force in air
+		this.groundForce = 0.014 // run force on ground
+		this.airForce = 0.012    // run force in air
 		this.mass = 5.01
 		this.jumpForce = 0.31
 		this.stoppingFriction = 0.80
@@ -301,7 +301,7 @@ class Player {
 		this.wallSlide = this.env.objects.filter(obj => {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 1
-		}).length !== 0 && this.body.velocity.y > 0
+		}).length !== 0 && this.body.velocity.y > 0 && this.isMoving
 
 		/* Colision consequences*/
 		if (!this.onAir) this.onGround()

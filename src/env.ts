@@ -9,16 +9,16 @@ import { default as colors } from '../ressources/config/colors.json'
 class Env {
 	public canvas: HTMLCanvasElement
 	public ctx: CanvasRenderingContext2D
-	public width: number = 0
-	public height: number = 0
-	public gridWidth: number
-	public gridHeight: number
+	public width: number = 0 // px
+	public height: number = 0 // px
+	public gridWidth: number // grid unit
+	public gridHeight: number // grid unit
 	public oldRelToAbs: Vector
 	public relToAbs: Vector
 	public map: Map
-	public engine: Matter.Engine  // Matter.js Engine
+	public engine: Matter.Engine
 	public engineRunner: Matter.Runner
-	public world: Matter.World  // Matter.js World
+	public world: Matter.World
 	public events: Array<DOMEvent> = []
 	public cursorPosition: Vector
 	private tick: number = 0
@@ -27,7 +27,7 @@ class Env {
 	public framerate: number = 60  // fps
 	public objects: SolidObject[]
 	public players: Player[]
-	private renderingStack: Array<RenderObject>
+	private renderingStack: RenderObject[]
 
 	constructor(canvas: HTMLCanvasElement, map: Map) {
 		this.canvas = canvas
@@ -53,7 +53,6 @@ class Env {
 		}
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
-		// Matter.Engine.run(this.engine)
 		this.init()
 	}
 
@@ -69,7 +68,7 @@ class Env {
 		[this.canvas.style.width, this.canvas.style.height] = [this.width + 'px', this.height + 'px'];
 		this.canvas.style.backgroundColor = colors.canvasBackground
 		document.querySelector('main').appendChild(this.canvas)
-		this.ctx.scale(dpr, dpr);
+		this.ctx.scale(dpr, dpr)
 	}
 
 	resize(): void {
@@ -104,7 +103,7 @@ class Env {
 				<Matter.IBodyDefinition>{
 					label: 'Wall',
 					friction: 0.5,
-					frictionStatic: 0.01
+					frictionStatic: 0.2
 				})
 		}
 	}

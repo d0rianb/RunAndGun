@@ -1,10 +1,10 @@
 /* Run&Gun v0.0.1-dev
-* Author : D0rian <dorian.beauchesne@icloud.com>
-* NOTE: https://github.com/landgreen/n-gon/blob/master/js/player.js
-* TODO:
-*     - Collisions filter and stuff
-*     - interrest in Matter.Runner
-*/
+ * Author : D0rian <dorian.beauchesne@icloud.com>
+ * NOTE: https://github.com/landgreen/n-gon/blob/master/js/player.js
+ * TODO:
+ *     - Collisions filter and stuff
+ *     - interrest in Matter.Runner
+ */
 
 import * as Matter from 'matter-js'
 
