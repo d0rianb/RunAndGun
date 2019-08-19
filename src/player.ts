@@ -85,6 +85,8 @@ class Player {
 	isMoving: boolean
 
 	jumpSensor: Matter.Body
+	playerHead: Matter.Body
+	playerBody: Matter.Body
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env) {
 		this.name = name
@@ -98,8 +100,8 @@ class Player {
 		this.grid_height = grid_height
 
 		const headY = this.height * 1 / 10
-		const playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
-		const playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
+		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
+		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
 		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 15, {
 			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
@@ -112,7 +114,7 @@ class Player {
 		// 	isSensor: true
 		// })
 		this.body = Matter.Body.create({
-			parts: [playerBody, playerHead, this.jumpSensor],
+			parts: [this.playerBody, this.playerHead, this.jumpSensor],
 			inertia: Infinity,
 			friction: FRICTION,
 			frictionAir: 0.018,
@@ -213,7 +215,7 @@ class Player {
 		}
 	}
 
-	lookAtCursor(cursor: Vector) {
+	lookAtCursor(cursor: Vector): void {
 		this.angle = Math.atan2(
 			cursor.y - this.pos.y,
 			cursor.x - this.pos.x
@@ -224,20 +226,28 @@ class Player {
 		this.nbJump = 0
 	}
 
-	resize() {
+	resize(): void {
 		const new_width: number = this.grid_width * this.env.relToAbs.x
 		const new_height: number = this.grid_height * this.env.relToAbs.y
-		const new_x: number = this.body.position.x / this.env.oldRelToAbs.x * this.env.relToAbs.x
-		const new_y: number = this.body.position.y / this.env.oldRelToAbs.y * this.env.relToAbs.y
-		const headOffsetY = new_width * 3 / 5
-		const playerHead = Matter.Bodies.circle(new_x, new_y - headOffsetY, new_width / 2)
-		const playerBody = Matter.Bodies.rectangle(new_x, new_y + headOffsetY, new_width, new_height - headOffsetY)
+
+		const ratioX: number = 1 / this.env.oldRelToAbs.x * this.env.relToAbs.x
+		const ratioY: number = 1 / this.env.oldRelToAbs.y * this.env.relToAbs.y
+		const headY = this.height * 1 / 10
+
+		this.playerHead = Matter.Bodies.circle(this.playerHead.position.x * ratioX, this.playerHead.position.y * ratioY, new_width / 2, { label: 'PlayerCircle' })
+		this.playerBody = Matter.Bodies.rectangle(this.playerBody.position.x * ratioX, this.playerBody.position.y * ratioY, new_width, new_height - 2 * headY, { label: 'PlayerRect' })
+		this.jumpSensor = Matter.Bodies.rectangle(this.jumpSensor.position.x * ratioX, this.jumpSensor.position.y * ratioY, new_width, 15, {
+			sleepThreshold: 9e10,
+			label: 'PlayerRect',
+			isSensor: true
+		})
 		this.body = Matter.Body.create({
-			parts: [playerBody, playerHead],
+			parts: [this.playerBody, this.playerHead, this.jumpSensor],
 			inertia: Infinity,
-			friction: 0.002,
-			frictionAir: 0.001,
-			restitution: 0,
+			friction: FRICTION,
+			frictionAir: 0.018,
+			frictionStatic: 0.8,
+			restitution: 0.12,
 			sleepThreshold: Infinity,
 			collisionFilter: {
 				group: 0,

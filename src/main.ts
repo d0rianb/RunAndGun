@@ -4,6 +4,7 @@
  * TODO:
  *     - Collisions filter and stuff
  *     - interrest in Matter.Runner
+ *     - change `typeof` by `instanceof`
  */
 
 import * as Matter from 'matter-js'
