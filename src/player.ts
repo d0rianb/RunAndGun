@@ -56,8 +56,14 @@ const KEY_MAP = {
 	'TILDE': kd.TILDE2
 }
 const MAX_SPEED = 14
-const FRICTION = 0.0015
-const WALL_SLIDE_FRICTION = 0.15
+const SECOND_JUMP_COEFF = 0.8
+
+const FRICTION = 0.01
+const STATIC_FRICTION = 0.25
+const AIR_FRICTION = 0.01
+
+const BODY_COLLISION_FILTER = 0x0010
+const ARM_COLLISION_FILTER = 0x0011
 
 class Player {
 	name: string
@@ -71,6 +77,7 @@ class Player {
 
 	env: Env
 	body: Matter.Body
+	composite: Matter.Composite
 	texture: string
 
 	angle: number
@@ -87,6 +94,7 @@ class Player {
 	jumpSensor: Matter.Body
 	playerHead: Matter.Body
 	playerBody: Matter.Body
+	playerArm: Matter.Body
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env) {
 		this.name = name
@@ -100,13 +108,30 @@ class Player {
 		this.grid_height = grid_height
 
 		const headY = this.height * 1 / 10
+		const armHeight = 10
 		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
-		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 15, {
+		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 10, {
 			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
 			label: 'PlayerRect',
 			isSensor: true
+		})
+		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width / 2, this.playerBody.position.y, this.width, armHeight, {
+			label: 'PlayerRect',
+			collisionFilter: {
+				group: 1,
+				category: ARM_COLLISION_FILTER,
+				mask: 0x010001
+			}
+		})
+
+		let armConstraint = Matter.Constraint.create({
+			bodyA: this.playerBody,
+			bodyB: this.playerArm,
+			pointA: this.playerBody.position,
+			pointB: { x: this.playerArm.position.x - this.width / 2, y: this.playerArm.position.y - armHeight / 2 },
+			stiffness: 0.8
 		})
 		// const headSensor = Matter.Bodies.rectangle(0, -57, 48, 45, {
 		// 	// senses if the player's head is empty and can return after crouching
@@ -117,24 +142,29 @@ class Player {
 			parts: [this.playerBody, this.playerHead, this.jumpSensor],
 			inertia: Infinity,
 			friction: FRICTION,
-			frictionAir: 0.018,
-			frictionStatic: 0.8,
+			frictionAir: AIR_FRICTION,
+			frictionStatic: STATIC_FRICTION,
 			restitution: 0.12,
 			sleepThreshold: Infinity,
 			collisionFilter: {
 				group: 0,
-				category: 0x001000,
+				category: BODY_COLLISION_FILTER,
 				mask: 0x010011
 			}
 		})
 
+		this.composite = Matter.Composite.create({
+			bodies: [this.body, this.playerArm],
+			constraints: [armConstraint]
+		})
+
 		console.log(this)
 
-		this.groundForce = 0.014 // run force on ground
-		this.airForce = 0.012    // run force in air
-		this.mass = 5.01
-		this.jumpForce = 0.31
-		this.stoppingFriction = 0.80
+		this.groundForce = 0.04 // run force on ground
+		this.airForce = 0.035    // run force in air
+		this.mass = 5
+		this.jumpForce = 0.3
+		this.stoppingFriction = 0.70
 		this.onAir = false
 		this.isMoving = false
 		this.wallSlide = false
@@ -143,7 +173,7 @@ class Player {
 		Matter.Body.setMass(this.body, this.mass)
 
 		this.env.players.push(this)
-		Matter.World.add(this.env.world, this.body)
+		Matter.World.add(this.env.world, [this.body, this.playerArm])
 		this.initSetup(setup)
 	}
 
@@ -187,27 +217,17 @@ class Player {
 	}
 
 	move(side: string): void {
-		this.isMoving = true
 		if (this.body.speed <= MAX_SPEED) {
-			if (side === 'left') {
-				if (this.onAir) {
-					this.body.force.x = -this.airForce
-				} else {
-					this.body.force.x = -this.groundForce
-				}
-			} else if (side === 'right') {
-				if (this.onAir) {
-					this.body.force.x = this.airForce
-				} else {
-					this.body.force.x = this.groundForce
-				}
-			}
+			const sideCoeff = side === 'left' ? -1 : 1
+			const force = this.onAir ? this.airForce : this.groundForce
+			this.body.force.x = sideCoeff * force
+			this.isMoving = true
 		}
 	}
 
 	jump(): void {
 		if (!this.onAir || this.nbJump < 2) {
-			const jumpForce: number = this.nbJump === 1 ? this.jumpForce * 0.8 : this.jumpForce // 2nd jump is less powerfull
+			const jumpForce: number = this.nbJump === 1 ? SECOND_JUMP_COEFF * this.jumpForce : this.jumpForce // 2nd jump is less powerfull
 			Matter.Body.applyForce(this.body, this.pos, { x: 0, y: jumpForce * 0.12 * this.mass })
 			this.body.force.y = -jumpForce
 			Matter.Body.setVelocity(this.body, { x: this.body.velocity.x, y: 0 })
@@ -244,7 +264,7 @@ class Player {
 		this.body = Matter.Body.create({
 			parts: [this.playerBody, this.playerHead, this.jumpSensor],
 			inertia: Infinity,
-			friction: FRICTION,
+			friction: 0.1,
 			frictionAir: 0.018,
 			frictionStatic: 0.8,
 			restitution: 0.12,
@@ -260,31 +280,33 @@ class Player {
 	toRender(): RenderObject[] {
 		let renderObjects = []
 		if (this.body.render.visible) {
-			this.body.parts.forEach(part => {
-				switch (part.label) {
-					case 'PlayerRect':
-						var { min, max } = <any>part.bounds
-						renderObjects.push(new RenderObject(
-							'rect',
-							part.position.x,
-							part.position.y,
-							<RenderOptions>{
-								width: max.x - min.x,
-								height: max.y - min.y
-							}
-						))
-						break
-					case 'PlayerCircle':
-						var { min, max } = <any>part.bounds
-						renderObjects.push(new RenderObject(
-							'circle',
-							part.position.x,
-							part.position.y,
-							// <RenderOptions>{ radius: (max.x - min.x) / 2 }
-							<RenderOptions>{ radius: this.width / 2 }
-						))
-						break
-				}
+			this.composite.bodies.forEach(body => {
+				body.parts.forEach(part => {
+					switch (part.label) {
+						case 'PlayerRect':
+							var { min, max } = <any>part.bounds
+							renderObjects.push(new RenderObject(
+								'rect',
+								part.position.x,
+								part.position.y,
+								<RenderOptions>{
+									width: max.x - min.x,
+									height: max.y - min.y
+								}
+							))
+							break
+						case 'PlayerCircle':
+							var { min, max } = <any>part.bounds
+							renderObjects.push(new RenderObject(
+								'circle',
+								part.position.x,
+								part.position.y,
+								<RenderOptions>{ radius: (max.x - min.x) / 2 }
+								// <RenderOptions>{ radius: this.width / 2 }
+							))
+							break
+					}
+				})
 			})
 		}
 		let debugText = new RenderObject('text', 10, 20, {
@@ -294,7 +316,10 @@ class Player {
 				`velocity: {x: ${this.body.velocity.x.toFixed(3)}, y: ${this.body.velocity.y.toFixed(3)}}`,
 				`position: {x: ${this.body.position.x.toFixed(3)}, y: ${this.body.position.y.toFixed(3)}}`,
 				`onAir: ${this.onAir}`,
+				`isMoving: ${this.isMoving}`,
 				`wallSlide: ${this.wallSlide}`,
+				`frictionStatic: ${this.body.frictionStatic}`,
+				`friction: ${this.body.friction}`,
 			]
 		})
 		renderObjects.push(debugText)
@@ -303,21 +328,26 @@ class Player {
 
 	update(): void {
 		this.lookAtCursor(this.env.cursorPosition)
+
 		/* Colision Detection */
 		this.onAir = this.env.objects.filter(obj => {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 0
 		}).length === 0
-		this.wallSlide = this.env.objects.filter(obj => {
+		let colidingWall = this.env.objects.filter(obj => {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 1
-		}).length !== 0 && this.body.velocity.y > 0 && this.isMoving
+		}).length !== 0 && this.body.velocity.y > 0
+
+		this.wallSlide = colidingWall && this.isMoving
 
 		/* Colision consequences*/
 		if (!this.onAir) this.onGround()
 		if (this.wallSlide) {
-			this.body.friction = WALL_SLIDE_FRICTION
+			this.body.friction = FRICTION
 			this.nbJump = 1
+		} else if (colidingWall) {
+			this.body.friction = 0
 		} else {
 			this.body.friction = FRICTION
 		}

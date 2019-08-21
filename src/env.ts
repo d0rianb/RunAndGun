@@ -6,6 +6,9 @@ import { DOMEvent } from './events'
 import { Renderer, RenderObject } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 
+const WALL_COLLISION_FILTER = 0x0010
+
+
 class Env {
 	public canvas: HTMLCanvasElement
 	public ctx: CanvasRenderingContext2D
@@ -102,8 +105,14 @@ class Env {
 				this,
 				<Matter.IBodyDefinition>{
 					label: 'Wall',
-					friction: 0.5,
-					frictionStatic: 0.2
+					friction: 0.0001,
+					chamfer: { radius: 0 },
+					collisionFilter: {
+						group: 0,
+						category: WALL_COLLISION_FILTER,
+						mask: 0x010011
+					}
+					// chamfer: { radius: 7.5 }
 				})
 		}
 	}

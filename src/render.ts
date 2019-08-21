@@ -28,8 +28,6 @@ class RenderObject {
 			case 'rect':
 				this.width = this.options.width
 				this.height = this.options.height
-				this.options.rounded = true
-				this.options.roundRadius = 7.5
 				break
 		}
 	}
@@ -56,6 +54,12 @@ class RenderObject {
 					)
 				} else {
 					if (!wireframe) ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height)
+					ctx.strokeRect(
+						this.x - this.width / 2,
+						this.y - this.height / 2,
+						this.width,
+						this.height
+					)
 				}
 				break
 			case 'circle':

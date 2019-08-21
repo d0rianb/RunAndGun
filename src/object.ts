@@ -3,6 +3,10 @@ import { Env } from './env'
 import { Map } from './map'
 import { RenderObject, RenderOptions } from './render'
 
+function isNumber(value: any): boolean {
+	return (value != null) && !isNaN(Number(value.toString()))
+}
+
 class Vector {
 	x: number
 	y: number
@@ -25,9 +29,10 @@ class SolidObject {
 	env: Env
 	grid_width: number
 	grid_height: number
+	round: number | boolean
 
 	/* Initalize the object with relative position and size */
-	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, options?: Matter.IBodyDefinition) {
+	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, options?: Matter.IChamferableBodyDefinition) {
 		this.type = type
 		this.isStatic = isStatic
 		this.env = env
@@ -39,6 +44,8 @@ class SolidObject {
 
 		this.grid_width = grid_width
 		this.grid_height = grid_height
+
+		this.round = <number>options.chamfer.radius || false
 
 		switch (this.type) {
 			case 'rect':
@@ -74,14 +81,15 @@ class SolidObject {
 	toRender(): RenderObject | boolean {
 		if (this.body.render.visible) {
 			let { min, max } = <any>this.body.bounds
+			let roundedOptions = isNumber(this.round) ? { rounded: true, roundRadius: this.round } : {}
 			return new RenderObject(
 				this.type,
 				this.body.position.x,
 				this.body.position.y,
-				<RenderOptions>{
+				<RenderOptions>Object.assign({
 					width: max.x - min.x,
 					height: max.y - min.y
-				}
+				}, roundedOptions)
 			)
 		}
 		return false
