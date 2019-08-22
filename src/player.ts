@@ -115,7 +115,6 @@ class Player {
 	playerArm: Matter.Body
 	insideLegs: Matter.Body
 	playerLegs: Matter.Body
-	legsOffsetY: number
 	crouchOffset: number
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env) {
@@ -132,13 +131,13 @@ class Player {
 		const headY = this.height * 1 / 3
 		const armHeight = 10
 		const bodyHeight = this.height * 2 / 3
+		const legsOffsetY = this.height * 1 / 3
 
-		this.legsOffsetY = this.height * 1 / 3
 		this.crouchOffset = parseFloat((this.height * 1 / 6).toFixed(2))
 
 		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - headY, this.width / 2, { label: 'PlayerCircle', render: { fillStyle: 'red' } })
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'blue' } })
-		this.insideLegs = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.legsOffsetY, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'green' } })
+		this.insideLegs = Matter.Bodies.rectangle(this.pos.x, this.pos.y + legsOffsetY, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'green' } })
 		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 4, {
 			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
@@ -286,16 +285,14 @@ class Player {
 
 	crouch(): void {
 		if (!this.isCrouch) {
-			this.legsOffsetY -= this.crouchOffset
-			Matter.Body.set(this.playerLegs, 'position', { x: this.body.position.x, y: this.body.position.y + this.legsOffsetY })
+			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
 			this.isCrouch = true
 		}
 	}
 
 	uncrouch(): void {
 		if (this.isCrouch) {
-			this.legsOffsetY += this.crouchOffset
-			Matter.Body.set(this.playerLegs, 'position', { x: this.body.position.x, y: this.body.position.y + this.legsOffsetY })
+			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
 			this.isCrouch = false
 		}
 	}
