@@ -65,6 +65,21 @@ const AIR_FRICTION = 0.01
 const BODY_COLLISION_FILTER = 0x0010
 const ARM_COLLISION_FILTER = 0x0011
 
+const armOffsetX = 5
+
+/*
+PLAYER BODY
+________
+| head | 1/3
+|      |
+| body | 1/3
+|      |
+| legs | 1/3
+________
+*/
+
+
+
 class Player {
 	name: string
 	pos: Vector
@@ -90,12 +105,18 @@ class Player {
 	wallSlide: boolean
 	wallSlideSide: string
 	nbJump: number
+	isCrouch: boolean
 	isMoving: boolean
+	dir: string
 
 	jumpSensor: Matter.Body
 	playerHead: Matter.Body
 	playerBody: Matter.Body
 	playerArm: Matter.Body
+	insideLegs: Matter.Body
+	playerLegs: Matter.Body
+	legsOffsetY: number
+	crouchOffset: number
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env) {
 		this.name = name
@@ -108,17 +129,31 @@ class Player {
 		this.grid_width = grid_width
 		this.grid_height = grid_height
 
-		const headY = this.height * 1 / 10
+		const headY = this.height * 1 / 3
 		const armHeight = 10
-		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
-		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
-		// this sensor check if the player is on the ground to enable jumping
-		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 10, {
+		const bodyHeight = this.height * 2 / 3
+
+		this.legsOffsetY = this.height * 1 / 3
+		this.crouchOffset = parseFloat((this.height * 1 / 6).toFixed(2))
+
+		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - headY, this.width / 2, { label: 'PlayerCircle', render: { fillStyle: 'red' } })
+		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'blue' } })
+		this.insideLegs = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.legsOffsetY, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'green' } })
+		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 4, {
+			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
 			label: 'PlayerRect',
-			isSensor: true
+			isSensor: true,
+			render: {
+				fillStyle: 'yellow'
+			}
 		})
-		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width + 2, this.playerBody.position.y, this.width, armHeight, {
+		this.playerLegs = Matter.Body.create({
+			parts: [this.insideLegs, this.jumpSensor],
+			label: 'ComposedBody'
+		})
+
+		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width, armHeight, {
 			label: 'PlayerRect',
 			inertia: Infinity,
 			sleepThreshold: Infinity,
@@ -134,7 +169,7 @@ class Player {
 		// 	isSensor: true
 		// })
 		this.body = Matter.Body.create({
-			parts: [this.playerBody, this.playerHead, this.jumpSensor],
+			parts: [this.playerBody, this.playerHead, this.playerLegs, this.jumpSensor],
 			inertia: Infinity,
 			friction: FRICTION,
 			frictionAir: AIR_FRICTION,
@@ -150,7 +185,7 @@ class Player {
 
 		let armConstraint = Matter.Constraint.create({
 			bodyA: this.body,
-			pointA: { x: this.width / 2, y: 0 },
+			pointA: { x: this.width / 2 - armOffsetX, y: 0 },
 			bodyB: this.playerArm,
 			pointB: { x: -this.width / 2, y: 0 },
 			stiffness: 0.2,
@@ -172,9 +207,11 @@ class Player {
 		this.stoppingFriction = 0.70
 		this.onAir = false
 		this.isMoving = false
+		this.isCrouch = false
 		this.wallSlide = false
 		this.wallSlideSide = 'no-collision'
 		this.nbJump = 0
+		this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
 
 		Matter.Body.setMass(this.body, this.mass)
 
@@ -210,7 +247,8 @@ class Player {
 				kd_key.press(() => this.jump())
 				break
 			case 'crouch':
-				kd_key.down(() => console.log('s'))
+				kd_key.down(() => this.crouch())
+				kd_key.up(() => this.uncrouch())
 				break
 			case 'dash':
 				kd_key.press(() => console.log('shift'))
@@ -231,10 +269,6 @@ class Player {
 		}
 	}
 
-	test() {
-		Matter.Body.applyForce(this.body, this.pos, { x: .6, y: 0 })
-	}
-
 	jump(): void {
 		if (!this.onAir || this.nbJump < 2) {
 			const jumpForce: number = this.nbJump === 1 ? SECOND_JUMP_COEFF * this.jumpForce : this.jumpForce // 2nd jump is less powerfull
@@ -250,24 +284,45 @@ class Player {
 		}
 	}
 
+	crouch(): void {
+		if (!this.isCrouch) {
+			this.legsOffsetY -= this.crouchOffset
+			Matter.Body.set(this.playerLegs, 'position', { x: this.body.position.x, y: this.body.position.y + this.legsOffsetY })
+			this.isCrouch = true
+		}
+	}
+
+	uncrouch(): void {
+		if (this.isCrouch) {
+			this.legsOffsetY += this.crouchOffset
+			Matter.Body.set(this.playerLegs, 'position', { x: this.body.position.x, y: this.body.position.y + this.legsOffsetY })
+			this.isCrouch = false
+		}
+	}
+
 	lookAtCursor(cursor: Vector): void {
 		this.angle = Math.atan2(
 			cursor.y - this.pos.y,
 			cursor.x - this.pos.x
 		)
 
-		const anchorArmVector: Vector = { x: this.body.position.x + this.width / 2, y: this.body.position.y }
+		const anchorArmVector: Vector = { x: this.body.position.x + this.width / 2 - armOffsetX, y: this.body.position.y }
 		const targetAngle = Matter.Vector.angle(anchorArmVector, cursor)
 		const flipAngle = Matter.Vector.angle(this.body.position, cursor);
 		(Matter as any).Body.rotate(this.playerArm, targetAngle - this.playerArm.angle, anchorArmVector)
-		// if (flipAngle + Math.PI / 2 < 0 || flipAngle + Math.PI / 2 > Math.PI) {
-		// 	this.flipDirection()
-		// }
+		const dirFactor = this.dir === 'left' ? 1 : -1
+		if ((flipAngle + Math.PI / 2) * dirFactor < 0 && (flipAngle + Math.PI / 2) < Math.PI) {
+			this.flipDirection()
+		}
 	}
 
 	flipDirection(): void {
-		Matter.Body.setAngle(this.body, 0)
-		Matter.Body.scale(this.body, -1, 1)
+		this.dir = this.dir === 'left' ? 'right' : 'left'
+		// Matter.Composite.setAngle(this.composite, 0)
+		// Matter.Body.scale(this.body, -1, 1, this.body.position)
+		// Matter.Body.scale(this.playerArm, -1, 1, this.body.position)
+		Matter.Body.setInertia(this.body, Infinity)
+		Matter.Body.setInertia(this.playerArm, Infinity)
 	}
 
 	onGround(): void {
@@ -312,7 +367,6 @@ class Player {
 				body.parts.forEach(part => {
 					switch (part.label) {
 						case 'PlayerRect':
-							var { min, max } = <any>part.bounds
 							renderObjects.push(new RenderObject(
 								'poly',
 								part.position.x,
@@ -323,13 +377,24 @@ class Player {
 							))
 							break
 						case 'PlayerCircle':
-							var { min, max } = <any>part.bounds
 							renderObjects.push(new RenderObject(
 								'circle',
 								part.position.x,
 								part.position.y,
 								<RenderOptions>{ radius: (<any>part).circleRadius }
 							))
+							break
+						case 'ComposedBody':
+							part.parts.forEach(insidePart => {
+								renderObjects.push(new RenderObject(
+									'poly',
+									part.position.x,
+									part.position.y,
+									<RenderOptions>{
+										vertices: part.vertices
+									}
+								))
+							})
 							break
 					}
 				})
@@ -353,12 +418,16 @@ class Player {
 				`velocity: {x: ${this.body.velocity.x.toFixed(3)}, y: ${this.body.velocity.y.toFixed(3)}}`,
 				`position: {x: ${this.body.position.x.toFixed(3)}, y: ${this.body.position.y.toFixed(3)}}`,
 				`angle: ${(this.angle * 180 / Math.PI).toFixed(2)}°`,
+				`mass: ${this.body.mass}`,
+				`inertia: ${this.body.inertia}`,
 				`onAir: ${this.onAir}`,
+				`isCrouching: ${this.isCrouch}`,
 				`isMoving: ${this.isMoving}`,
 				`wallSlide: ${this.wallSlide}`,
 				`wallSlideSide: ${this.wallSlideSide}`,
 				`frictionStatic: ${this.body.frictionStatic}`,
 				`friction: ${this.body.friction}`,
+				`direction: ${this.dir}`,
 			]
 		})
 		renderObjects.push(debugText)
@@ -403,8 +472,9 @@ class Player {
 		} else {
 			this.isMoving = false
 		}
-		// this.velocity = this.body.velocity
-		// this.pos = this.body.position
+		if (this.wallSlide && this.body.friction == 0) {
+			console.log('FrictionError')
+		}
 	}
 }
 
