@@ -1,4 +1,5 @@
 import * as Matter from 'matter-js'
+import * as main from './main'
 import { Vector, SolidObject } from './object'
 import { Player } from './player'
 import { Map } from './map'
@@ -8,6 +9,34 @@ import { default as colors } from '../ressources/config/colors.json'
 
 const WALL_COLLISION_FILTER = 0x0010
 
+let debug = main.DEBUG
+
+const renderOption: object = {
+	width: 997,
+	height: 755,
+	pixelRatio: 'auto',
+	background: '#bbb',
+	wireframeBackground: '#222',
+	hasBounds: true,
+	enabled: true,
+	wireframes: debug,
+	showSleeping: true,
+	showDebug: debug,
+	showBroadphase: debug,
+	showBounds: debug,
+	showVelocity: debug,
+	showCollisions: debug,
+	showSeparations: false,
+	showAxes: false,
+	showPositions: debug,
+	showAngleIndicator: false,
+	showIds: debug,
+	showShadows: false,
+	showVertexNumbers: false,
+	showConvexHulls: false,
+	showInternalEdges: false,
+	showMousePosition: false
+}
 
 class Env {
 	public canvas: HTMLCanvasElement
@@ -21,6 +50,7 @@ class Env {
 	public map: Map
 	public engine: Matter.Engine
 	public engineRunner: Matter.Runner
+	public renderer: Matter.Render
 	public world: Matter.World
 	public events: Array<DOMEvent> = []
 	public cursorPosition: Vector
@@ -31,8 +61,9 @@ class Env {
 	public objects: SolidObject[]
 	public players: Player[]
 	private renderingStack: RenderObject[]
+	public renderMode: string // local | matter-js
 
-	constructor(canvas: HTMLCanvasElement, map: Map) {
+	constructor(canvas: HTMLCanvasElement, map: Map, renderMode: string = 'local') {
 		this.canvas = canvas
 		this.ctx = canvas.getContext('2d')
 		this.map = map
@@ -41,14 +72,13 @@ class Env {
 
 		this.engine = Matter.Engine.create({ enableSleeping: true })
 		this.engineRunner = Matter.Runner.create({})
+		this.renderMode = renderMode
 		this.world = this.engine.world
 		this.world.gravity.scale = 0.0019
 		this.players = []
 		this.objects = []
 		this.renderingStack = []
 		this.cursorPosition = new Vector(0, 0)
-		this.events.push(new DOMEvent('resize', () => this.resize()))
-		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
 		this.sizeCanvas()
 		this.relToAbs = {
 			x: this.width / this.gridWidth,
@@ -56,6 +86,12 @@ class Env {
 		}
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
+		this.events.push(new DOMEvent('resize', () => this.resize()))
+		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
+		if (this.renderMode === 'matter-js') {
+			this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: renderOption })
+			Matter.Render.run(this.renderer)
+		}
 		this.init()
 	}
 
@@ -67,11 +103,13 @@ class Env {
 	sizeCanvas(): void {
 		const dpr: number = window.devicePixelRatio || 1;
 		[this.width, this.height] = this.getWindowDimensions();
-		[this.canvas.width, this.canvas.height] = [this.width * dpr, this.height * dpr];
-		[this.canvas.style.width, this.canvas.style.height] = [this.width + 'px', this.height + 'px'];
-		this.canvas.style.backgroundColor = colors.canvasBackground
-		document.querySelector('main').appendChild(this.canvas)
-		this.ctx.scale(dpr, dpr)
+		if (this.renderMode === 'local') {
+			[this.canvas.width, this.canvas.height] = [this.width * dpr, this.height * dpr];
+			[this.canvas.style.width, this.canvas.style.height] = [this.width + 'px', this.height + 'px'];
+			this.canvas.style.backgroundColor = colors.canvasBackground
+			document.querySelector('main').appendChild(this.canvas)
+			this.ctx.scale(dpr, dpr)
+		}
 	}
 
 	resize(): void {
@@ -139,7 +177,7 @@ class Env {
 		Matter.Runner.tick(this.engineRunner, this.engine, 1 / this.framerate)
 		this.objects.forEach(obj => obj.update())
 		this.players.forEach(player => player.update())
-		this.render()
+		if (this.renderMode === 'local') this.render()
 		this.tick++
 		requestAnimationFrame(() => this.update())
 	}

@@ -1,3 +1,5 @@
+import { Vector } from './object'
+
 interface RenderOptions {
 	width?: number,
 	height?: number,
@@ -6,7 +8,10 @@ interface RenderOptions {
 	content?: string | string[],
 	font?: string,
 	rounded?: boolean,
-	roundRadius?: number // px
+	roundRadius?: number, // px
+	x2?: number,
+	y2?: number,
+	vertices?: Vector[]
 }
 
 
@@ -65,6 +70,16 @@ class RenderObject {
 			case 'circle':
 				ctx.beginPath()
 				ctx.arc(this.x, this.y, this.options.radius, 0, 2 * Math.PI)
+				ctx.closePath()
+				break
+			case 'poly':
+				let vertices = this.options.vertices
+				ctx.beginPath()
+				ctx.moveTo(vertices[0].x, vertices[0].y);
+				for (var j = 1; j < vertices.length; j++) {
+					ctx.lineTo(vertices[j].x, vertices[j].y);
+				}
+				ctx.closePath()
 				break
 			case 'text':
 				ctx.font = this.options.font || '16px Roboto'
@@ -78,6 +93,12 @@ class RenderObject {
 						i++
 					})
 				}
+			case 'line':
+				ctx.beginPath()
+				ctx.moveTo(this.x, this.y)
+				ctx.lineTo(this.options.x2, this.options.y2)
+				ctx.closePath()
+
 		}
 		ctx.stroke()
 		if (!wireframe) ctx.fill()

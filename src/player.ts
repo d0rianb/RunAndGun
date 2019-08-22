@@ -112,27 +112,21 @@ class Player {
 		const armHeight = 10
 		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - this.height / 2 + headY, this.width / 2, { label: 'PlayerCircle' })
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y + headY, this.width, this.height - 2 * headY, { label: 'PlayerRect' })
+		// this sensor check if the player is on the ground to enable jumping
 		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 10, {
-			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
 			label: 'PlayerRect',
 			isSensor: true
 		})
-		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width / 2, this.playerBody.position.y, this.width, armHeight, {
+		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width + 2, this.playerBody.position.y, this.width, armHeight, {
 			label: 'PlayerRect',
+			inertia: Infinity,
+			sleepThreshold: Infinity,
 			collisionFilter: {
 				group: 1,
 				category: ARM_COLLISION_FILTER,
 				mask: 0x010001
 			}
-		})
-
-		let armConstraint = Matter.Constraint.create({
-			bodyA: this.playerBody,
-			bodyB: this.playerArm,
-			pointA: this.playerBody.position,
-			pointB: { x: this.playerArm.position.x - this.width / 2, y: this.playerArm.position.y - armHeight / 2 },
-			stiffness: 0.8
 		})
 		// const headSensor = Matter.Bodies.rectangle(0, -57, 48, 45, {
 		// 	// senses if the player's head is empty and can return after crouching
@@ -154,7 +148,17 @@ class Player {
 			}
 		})
 
+		let armConstraint = Matter.Constraint.create({
+			bodyA: this.body,
+			pointA: { x: this.width / 2, y: 0 },
+			bodyB: this.playerArm,
+			pointB: { x: -this.width / 2, y: 0 },
+			stiffness: 0.2,
+			length: 0
+		})
+
 		this.composite = Matter.Composite.create({
+			label: 'Player',
 			bodies: [this.body, this.playerArm],
 			constraints: [armConstraint]
 		})
@@ -175,7 +179,7 @@ class Player {
 		Matter.Body.setMass(this.body, this.mass)
 
 		this.env.players.push(this)
-		Matter.World.add(this.env.world, [this.body, this.playerArm])
+		Matter.World.add(this.env.world, this.composite)
 		this.initSetup(setup)
 	}
 
@@ -215,7 +219,7 @@ class Player {
 				kd_key.press(() => console.log('r'))
 				break
 		}
-		kd.F.press(() => this.test())
+		kd.F.press(() => this.flipDirection())
 	}
 
 	move(side: string): void {
@@ -251,6 +255,19 @@ class Player {
 			cursor.y - this.pos.y,
 			cursor.x - this.pos.x
 		)
+
+		const anchorArmVector: Vector = { x: this.body.position.x + this.width / 2, y: this.body.position.y }
+		const targetAngle = Matter.Vector.angle(anchorArmVector, cursor)
+		const flipAngle = Matter.Vector.angle(this.body.position, cursor);
+		(Matter as any).Body.rotate(this.playerArm, targetAngle - this.playerArm.angle, anchorArmVector)
+		// if (flipAngle + Math.PI / 2 < 0 || flipAngle + Math.PI / 2 > Math.PI) {
+		// 	this.flipDirection()
+		// }
+	}
+
+	flipDirection(): void {
+		Matter.Body.setAngle(this.body, 0)
+		Matter.Body.scale(this.body, -1, 1)
 	}
 
 	onGround(): void {
@@ -297,12 +314,11 @@ class Player {
 						case 'PlayerRect':
 							var { min, max } = <any>part.bounds
 							renderObjects.push(new RenderObject(
-								'rect',
+								'poly',
 								part.position.x,
 								part.position.y,
 								<RenderOptions>{
-									width: max.x - min.x,
-									height: max.y - min.y
+									vertices: part.vertices
 								}
 							))
 							break
@@ -312,12 +328,22 @@ class Player {
 								'circle',
 								part.position.x,
 								part.position.y,
-								<RenderOptions>{ radius: (max.x - min.x) / 2 }
-								// <RenderOptions>{ radius: this.width / 2 }
+								<RenderOptions>{ radius: (<any>part).circleRadius }
 							))
 							break
 					}
 				})
+			})
+			this.composite.constraints.forEach(constraint => {
+				renderObjects.push(new RenderObject(
+					'line',
+					constraint.bodyA.position.x + constraint.pointA.x,
+					constraint.bodyA.position.y + constraint.pointA.y,
+					<RenderOptions>{
+						x2: constraint.bodyB.position.x + constraint.pointB.x,
+						y2: constraint.bodyB.position.y + constraint.pointB.y
+					}
+				))
 			})
 		}
 		let debugText = new RenderObject('text', 10, 20, {
@@ -377,8 +403,8 @@ class Player {
 		} else {
 			this.isMoving = false
 		}
-		this.velocity = this.body.velocity
-		this.pos = this.body.position
+		// this.velocity = this.body.velocity
+		// this.pos = this.body.position
 	}
 }
 
