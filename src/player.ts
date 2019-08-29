@@ -149,7 +149,8 @@ class Player {
 		})
 		this.playerLegs = Matter.Body.create({
 			parts: [this.insideLegs, this.jumpSensor],
-			label: 'ComposedBody'
+			label: 'ComposedBody',
+			restitution: 0.2
 		})
 
 		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width, armHeight, {
@@ -173,7 +174,7 @@ class Player {
 			friction: FRICTION,
 			frictionAir: AIR_FRICTION,
 			frictionStatic: STATIC_FRICTION,
-			restitution: 0.12,
+			restitution: 0.14,
 			sleepThreshold: Infinity,
 			collisionFilter: {
 				group: 0,
@@ -257,6 +258,7 @@ class Player {
 				break
 		}
 		kd.F.press(() => this.flipDirection())
+		kd.G.press(() => this.env.swicthRenderer())
 	}
 
 	move(side: string): void {
@@ -286,6 +288,7 @@ class Player {
 	crouch(): void {
 		if (!this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
+			Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 10 })
 			this.isCrouch = true
 		}
 	}
@@ -293,6 +296,7 @@ class Player {
 	uncrouch(): void {
 		if (this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
+			Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 10 })
 			this.isCrouch = false
 		}
 	}
@@ -452,7 +456,7 @@ class Player {
 		/* Colision consequences*/
 		if (!this.onAir) this.onGround()
 		if (this.wallSlide) {
-			this.body.friction = FRICTION
+			this.body.friction = FRICTION / 10
 			this.nbJump = 1
 		} else if (colidingWall) {
 			this.body.friction = 0

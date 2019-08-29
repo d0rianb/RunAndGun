@@ -172,6 +172,22 @@ class Env {
 		this.renderingStack.push(object)
 	}
 
+	swicthRenderer() {
+		this.renderMode = this.renderMode === 'local' ? 'matter-js' : 'local'
+		console.log('New render mode is', this.renderMode)
+		if (this.renderMode === 'matter-js') {
+			this.canvas.style.display = 'none'
+			if (!this.renderer) {
+				this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: renderOption })
+			}
+			Matter.Render.run(this.renderer)
+		} else if (this.renderMode === 'local') {
+			if (this.renderer) Matter.Render.stop(this.renderer)
+			this.canvas.style.display = 'inherit'
+			this.sizeCanvas()
+		}
+	}
+
 	update(): void {
 		// Matter.Engine.update(this.engine, 1 / this.framerate)
 		Matter.Runner.tick(this.engineRunner, this.engine, 1 / this.framerate)

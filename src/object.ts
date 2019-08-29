@@ -55,7 +55,7 @@ class SolidObject {
 		}
 		this.env.objects.push(this)
 		Matter.World.add(this.env.world, this.body)
-		console.log(this)
+		// console.log(this)
 	}
 
 	move(vec: Vector): void {
