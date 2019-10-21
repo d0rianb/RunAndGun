@@ -22,7 +22,9 @@
 	        "circle   20     1   0.3  0.3     dynamic    ball",
 	        "circle   50     1   0.5  0.5     dynamic    ball-2",
 			"rect     40    10     2    1     static     plateform-3",
-			"rect     44     8     3    1     static     plateform-4"
+			"rect     44     8     3    1     static     plateform-4",
+			"rect     52     4     1   10     static     vertical-3",
+			"rect     55     4     1   10     static     vertical-4"
 
     ]
 

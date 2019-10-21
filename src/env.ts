@@ -80,7 +80,7 @@ class Env {
 		this.renderingStack = []
 		this.cursorPosition = new Vector(0, 0)
 		this.sizeCanvas()
-		this.camera = new Camera(0, 0, this.width, this.height)
+		this.camera = new Camera(0, 0, this.width, this.height, this)
 		this.relToAbs = {
 			x: this.width / this.gridWidth,
 			y: this.height / this.gridHeight
@@ -250,19 +250,20 @@ class Env {
 
 class Camera {
 	focus: Player
-
 	x: number
 	y: number
 	width: number
 	height: number
 	safe_zone_size: number
 	safe_zone: any
+	env: Env
 
 	follow_x: boolean
 	follow_y: boolean
 
-	constructor(x: number, y: number, width: number, height: number) {
+	constructor(x: number, y: number, width: number, height: number, env: Env) {
 		this.focus = undefined
+		this.env = env
 		this.x = x
 		this.y = y
 		this.width = width
@@ -290,10 +291,16 @@ class Camera {
 			let focus_x: number = this.focus.pos.x
 			let focus_y: number = this.focus.pos.y
 			if (this.follow_x) {
+				let delta: number = 0
 				if (focus_x <= this.x + this.safe_zone.x1) {
-					this.x += focus_x - this.x - this.safe_zone.x1
+					delta = focus_x - this.x - this.safe_zone.x1
+					this.x += delta
 				} else if (focus_x >= this.x + this.safe_zone.x2) {
-					this.x += focus_x - this.x - this.safe_zone.x2
+					delta = focus_x - this.x - this.safe_zone.x2
+					this.x += delta
+				}
+				if (this.env.renderMode == 'matter-js') {
+					Matter.Bounds.translate(this.env.renderer.bounds, <Matter.Vector>{ x: delta, y: 0 })
 				}
 			}
 		}
