@@ -288,7 +288,7 @@ class Player {
 	crouch(): void {
 		if (!this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
-			Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 10 })
+			Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 8 })
 			this.isCrouch = true
 		}
 	}
@@ -296,7 +296,7 @@ class Player {
 	uncrouch(): void {
 		if (this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
-			Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 10 })
+			Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 8 })
 			this.isCrouch = false
 		}
 	}

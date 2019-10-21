@@ -52,6 +52,10 @@ class SolidObject {
 				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
 				this.id = this.body.id
 				break
+			case 'circle':
+				this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options))
+				this.id = this.body.id
+				break
 		}
 		this.env.objects.push(this)
 		Matter.World.add(this.env.world, this.body)
@@ -80,17 +84,26 @@ class SolidObject {
 
 	toRender(): RenderObject | boolean {
 		if (this.body.render.visible) {
-			let { min, max } = <any>this.body.bounds
-			let roundedOptions = isNumber(this.round) ? { rounded: true, roundRadius: this.round } : {}
-			return new RenderObject(
-				this.type,
-				this.body.position.x,
-				this.body.position.y,
-				<RenderOptions>Object.assign({
-					width: max.x - min.x,
-					height: max.y - min.y
-				}, roundedOptions)
-			)
+			switch (this.type) {
+				case 'rect':
+					return new RenderObject(
+						'poly',
+						this.body.position.x,
+						this.body.position.y,
+						<RenderOptions>{
+							vertices: this.body.vertices
+						}
+					)
+					break
+				case 'circle':
+					return new RenderObject(
+						'circle',
+						this.body.position.x,
+						this.body.position.y,
+						<RenderOptions>{ radius: (<any>this.body).circleRadius }
+					)
+					break
+			}
 		}
 		return false
 	}

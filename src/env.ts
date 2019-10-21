@@ -86,7 +86,7 @@ class Env {
 		}
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
-		this.events.push(new DOMEvent('resize', () => this.resize()))
+		// this.events.push(new DOMEvent('resize', () => this.resize()))
 		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
 		if (this.renderMode === 'matter-js') {
 			this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: renderOption })
@@ -95,9 +95,10 @@ class Env {
 		this.init()
 	}
 
-	getWindowDimensions(): any[] {
+	getWindowDimensions(): number[] {
 		const html: any = document.scrollingElement
-		return [html.clientWidth, html.clientHeight]
+		// return [html.clientWidth, html.clientHeight]
+		return [window.outerWidth, html.clientHeight]
 	}
 
 	sizeCanvas(): void {
@@ -131,27 +132,32 @@ class Env {
 		this.objects = []
 		Matter.World.clear(this.world, false)
 		for (let objString of this.map.objects) {
-			let objArray: Array<string> = objString.split(' ')
-			let isStatic: boolean = objArray.length > 5
-			let solidObj: SolidObject = new SolidObject(
-				objArray[0],
-				parseInt(objArray[1]),
-				parseInt(objArray[2]),
-				parseInt(objArray[3]),
-				parseInt(objArray[4]),
-				isStatic,
-				this,
-				<Matter.IBodyDefinition>{
-					label: 'Wall',
-					friction: 0.0001,
-					chamfer: { radius: 0 },
-					collisionFilter: {
-						group: 0,
-						category: WALL_COLLISION_FILTER,
-						mask: 0x010011
-					}
-					// chamfer: { radius: 7.5 }
-				})
+			let objArray: Array<string> = objString.split(/[\s,]+/)
+			let type: string = objArray[0]
+			if (type !== 'format') {
+				let isStatic: boolean = objArray.length > 5 && objArray[5] === 'static'
+				let solidObj: SolidObject = new SolidObject(
+					objArray[0],
+					parseFloat(objArray[1]),
+					parseFloat(objArray[2]),
+					parseFloat(objArray[3]),
+					parseFloat(objArray[4]),
+					isStatic,
+					this,
+					<Matter.IBodyDefinition>{
+						label: 'Wall',
+						friction: 0.0001,
+						chamfer: { radius: 0 },
+						mass: 5,
+						frictionStatic: 0.1,
+						collisionFilter: {
+							group: 0,
+							category: WALL_COLLISION_FILTER,
+							mask: 0x010011
+						}
+						// chamfer: { radius: 7.5 }
+					})
+			}
 		}
 	}
 

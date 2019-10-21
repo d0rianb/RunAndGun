@@ -5,19 +5,21 @@
 		"height": "fill"
 	},
 	"grid": {
-		"width": "30",
+		"width": "36",
 		"height": "18"
 	},
 	"objects": [
-        "rect 0 17 30 1 static name=floor",
-        "rect 2 10 2 1 static name=plateform-1",
-        "rect 22 10 2 1 static name=plateform-2",
-		"rect 12 3 1 11 static name=vertical-2",
-		"rect 18 3 1 11 static name=vertical-1",
-		"rect 6 3 6 1 static name=horizontal-1",
-		"rect 19 3 6 1 static name=horizontal-2",
-        "rect 0 15 1 2 static name=left-block",
-        "rect 29 15 1 2 static name=right-block"
+	"format type       x     y     w     h    inertie    name",
+	        "rect      0    17    30    1     static     name=floor",
+	        "rect      2    10     2    1     static     name=plateform-1",
+	        "rect     22    10     1    1     static     name=plateform-2",
+			"rect     12     3     1   11     static     name=vertical-2",
+			"rect     18     3     1   11     static     name=vertical-1",
+			"rect      6     3     6    1     static     name=horizontal-1",
+			"rect     19     3     6    1     static     name=horizontal-2",
+	        "rect      0    15     1    2     static     name=left-block",
+	        "rect     29    15     1    2     static     name=right-block",
+	        "circle   20     1  0.25 0.25     dynamic    name=ball"
     ]
 
 }

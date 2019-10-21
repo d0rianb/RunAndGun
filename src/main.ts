@@ -7,6 +7,7 @@
  *     - change `typeof` by `instanceof`
  *     - bug when wallSlide
  *     - dash or grapnel ?
+ *     - Add shots
  */
 
 import * as Matter from 'matter-js'
@@ -25,7 +26,7 @@ const ctx: CanvasRenderingContext2D = canvas.getContext('2d')
 
 const map1: Map = new Map(map1_file)
 
-let env: Env = new Env(canvas, map1, 'matter-js')
+let env: Env = new Env(canvas, map1, 'local')
 let player: Player = new Player('Dorian', 9, 7, 1, 2, env)
 
 env.update()
