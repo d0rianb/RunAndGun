@@ -133,7 +133,7 @@ class Player {
 		const bodyHeight = this.height * 2 / 3
 		const legsOffsetY = this.height * 1 / 3
 
-		this.crouchOffset = parseFloat((this.height * 1 / 6).toFixed(2))
+		this.crouchOffset = parseFloat((this.height * 1.5dd / 6).toFixed(2))
 
 		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - headY, this.width / 2, { label: 'PlayerCircle', render: { fillStyle: 'red' } })
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'blue' } })
@@ -288,7 +288,7 @@ class Player {
 	crouch(): void {
 		if (!this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
-			Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 8 })
+			// Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 8 })
 			this.isCrouch = true
 		}
 	}
@@ -296,7 +296,7 @@ class Player {
 	uncrouch(): void {
 		if (this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
-			Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 8 })
+			// Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 8 })
 			this.isCrouch = false
 		}
 	}
