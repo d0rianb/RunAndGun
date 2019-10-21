@@ -1,8 +1,8 @@
 {
 	"name": "Map 1",
 	"dimensions": {
-		"width": "fill",
-		"height": "fill"
+		"width": "100",
+		"height": "25"
 	},
 	"grid": {
 		"width": "36",
@@ -10,16 +10,20 @@
 	},
 	"objects": [
 	"format type       x     y     w     h    inertie    name",
-	        "rect      0    17    30    1     static     name=floor",
-	        "rect      2    10     2    1     static     name=plateform-1",
-	        "rect     22    10     1    1     static     name=plateform-2",
-			"rect     12     3     1   11     static     name=vertical-2",
-			"rect     18     3     1   11     static     name=vertical-1",
-			"rect      6     3     6    1     static     name=horizontal-1",
-			"rect     19     3     6    1     static     name=horizontal-2",
-	        "rect      0    15     1    2     static     name=left-block",
-	        "rect     29    15     1    2     static     name=right-block",
-	        "circle   20     1  0.25 0.25     dynamic    name=ball"
+	        "rect      0    17    90    1     static     floor",
+	        "rect      2    10     2    1     static     plateform-1",
+	        "rect     22    10     1    1     static     plateform-2",
+			"rect     12     3     1   11     static     vertical-2",
+			"rect     18     3     1   11     static     vertical-1",
+			"rect      6     3     6    1     static     horizontal-1",
+			"rect     19     3     6    1     static     horizontal-2",
+	        "rect      0    15     1    2     static     left-block",
+	        "rect     29    15     1    2     static     right-block",
+	        "circle   20     1   0.3  0.3     dynamic    ball",
+	        "circle   50     1   0.5  0.5     dynamic    ball-2",
+			"rect     40    10     2    1     static     plateform-3",
+			"rect     44     8     3    1     static     plateform-4"
+
     ]
 
 }

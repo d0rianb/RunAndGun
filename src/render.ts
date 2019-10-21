@@ -1,4 +1,5 @@
 import { Vector } from './object'
+import { Camera } from './env'
 
 interface RenderOptions {
 	width?: number,
@@ -11,7 +12,8 @@ interface RenderOptions {
 	roundRadius?: number, // px
 	x2?: number,
 	y2?: number,
-	vertices?: Vector[]
+	vertices?: Vector[],
+	interface?: boolean,
 }
 
 
@@ -37,7 +39,15 @@ class RenderObject {
 		}
 	}
 
-	render(ctx: CanvasRenderingContext2D, wireframe: boolean = false): void {
+	render(ctx: CanvasRenderingContext2D, camera: Camera, wireframe: boolean = false): void {
+		if (!this.options.interface) {
+			this.x -= camera.x
+			this.y -= camera.y
+			if (this.options.hasOwnProperty('x2') && this.options.hasOwnProperty('y2')) {
+				this.options.x2 -= camera.x
+				this.options.y2 -= camera.y
+			}
+		}
 		switch (this.type) {
 			case 'rect':
 				if (this.options.rounded) {
@@ -75,9 +85,9 @@ class RenderObject {
 			case 'poly':
 				let vertices = this.options.vertices
 				ctx.beginPath()
-				ctx.moveTo(vertices[0].x, vertices[0].y);
+				ctx.moveTo(vertices[0].x - camera.x, vertices[0].y - camera.y)
 				for (var j = 1; j < vertices.length; j++) {
-					ctx.lineTo(vertices[j].x, vertices[j].y);
+					ctx.lineTo(vertices[j].x - camera.x, vertices[j].y - camera.y)
 				}
 				ctx.closePath()
 				break
@@ -107,8 +117,8 @@ class RenderObject {
 }
 
 class Renderer {
-	static render(ctx: CanvasRenderingContext2D, object: RenderObject, wireframe: boolean = false) {
-		object.render(ctx, wireframe)
+	static render(ctx: CanvasRenderingContext2D, object: RenderObject, camera: Camera, wireframe: boolean = false) {
+		object.render(ctx, camera, wireframe)
 	}
 }
 

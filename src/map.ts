@@ -34,4 +34,4 @@ class Map {
 	}
 }
 
-export { Map }
+export { Map, SizeObject }

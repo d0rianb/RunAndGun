@@ -108,6 +108,7 @@ class Player {
 	isCrouch: boolean
 	isMoving: boolean
 	dir: string
+	cameraFocus: boolean = false
 
 	jumpSensor: Matter.Body
 	playerHead: Matter.Body
@@ -117,9 +118,10 @@ class Player {
 	playerLegs: Matter.Body
 	crouchOffset: number
 
-	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env) {
+	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env, camera_focus: boolean = false) {
 		this.name = name
 		this.env = env
+		this.cameraFocus = camera_focus
 		this.width = grid_width * this.env.relToAbs.x
 		this.height = grid_height * this.env.relToAbs.y
 		this.pos = new Vector(grid_x * this.env.relToAbs.x + this.width / 2, grid_y * this.env.relToAbs.y + this.height / 2)
@@ -133,7 +135,7 @@ class Player {
 		const bodyHeight = this.height * 2 / 3
 		const legsOffsetY = this.height * 1 / 3
 
-		this.crouchOffset = parseFloat((this.height * 1.5dd / 6).toFixed(2))
+		this.crouchOffset = parseFloat((this.height * 1.5 / 6).toFixed(2))
 
 		this.playerHead = Matter.Bodies.circle(this.pos.x, this.pos.y - headY, this.width / 2, { label: 'PlayerCircle', render: { fillStyle: 'red' } })
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'blue' } })
@@ -215,8 +217,7 @@ class Player {
 
 		Matter.Body.setMass(this.body, this.mass)
 
-		this.env.players.push(this)
-		Matter.World.add(this.env.world, this.composite)
+		this.env.addPlayer(this)
 		this.initSetup(setup)
 	}
 
@@ -429,7 +430,9 @@ class Player {
 				`frictionStatic: ${this.body.frictionStatic}`,
 				`friction: ${this.body.friction}`,
 				`direction: ${this.dir}`,
-			]
+				`camera : ${this.env.camera.x}, ${this.env.camera.y}`,
+			],
+			interface: true
 		})
 		renderObjects.push(debugText)
 		return renderObjects
@@ -443,6 +446,7 @@ class Player {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 0
 		}).length === 0
+
 		let colidingWall = this.env.objects.filter(obj => {
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			if (collision.collided && collision.axisNumber === 1) {
@@ -476,6 +480,7 @@ class Player {
 		if (this.wallSlide && this.body.friction == 0) {
 			console.log('FrictionError')
 		}
+		this.pos = new Vector(this.body.position.x, this.body.position.y)
 	}
 }
 
