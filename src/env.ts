@@ -4,10 +4,12 @@ import { Vector, SolidObject } from './object'
 import { Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
+import { Shot } from './weapon'
 import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 
 const WALL_COLLISION_FILTER = 0x0010
+const GRAVITY_SCALE = 0.0019
 
 let debug = main.DEBUG
 
@@ -43,6 +45,8 @@ class Env {
 	public height: number = 0 // px
 	public gridWidth: number // grid unit
 	public gridHeight: number // grid unit
+	public mapWidth: number
+	public mapHeight: number
 	public oldRelToAbs: Vector
 	public relToAbs: Vector
 	public map: Map
@@ -59,6 +63,7 @@ class Env {
 	public framerate: number = 60  // fps
 	public objects: SolidObject[]
 	public players: Player[]
+	public shots: Shot[]
 	private renderingStack: RenderObject[]
 	public renderMode: string // local | matter-js
 
@@ -73,23 +78,26 @@ class Env {
 		this.engineRunner = Matter.Runner.create({})
 		this.renderMode = renderMode
 		this.world = this.engine.world
-		this.world.gravity.scale = 0.0019
+		this.world.gravity.scale = 0//0.0019
 
 		this.players = []
+		this.shots = []
 		this.objects = []
 		this.renderingStack = []
 		this.cursorPosition = new Vector(0, 0)
 		this.sizeCanvas()
-		this.camera = new Camera(0, 0, this.width, this.height, this)
 		this.relToAbs = {
 			x: this.width / this.gridWidth,
 			y: this.height / this.gridHeight
 		}
+		this.mapWidth = this.map.dimensions.width * this.relToAbs.x
+		this.mapHeight = this.map.dimensions.height * this.relToAbs.y
 		this.oldRelToAbs = new Vector(0, 0)
 		Object.assign(this.oldRelToAbs, this.relToAbs)
 		// this.events.push(new DOMEvent('resize', () => this.resize()))
 		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
-		this.init()
+		this.initMatterEngine()
+		this.initRender()
 	}
 
 	getWindowDimensions(): number[] {
@@ -124,13 +132,40 @@ class Env {
 		Object.assign(this.oldRelToAbs, this.relToAbs)
 	}
 
-	init(): void {
+	initMatterEngine(): void {
+		this.world.gravity.scale = 0 //0.0019
+		Matter.Events.on(this.engine, 'beforeUpdate', e => {
+			// Own gravity
+			const bodies = Matter.Composite.allBodies(this.engine.world)
+			bodies.forEach(body => {
+				if (!(body.isStatic || body.isSleeping) && body.label !== 'Shot') {
+					body.force.y += body.mass * GRAVITY_SCALE
+				}
+			})
+		})
+		Matter.Events.on(this.engine, 'collisionActive', e => {
+			const shotCollision = e.pairs.filter(pair => pair.bodyA.label === 'Shot' || pair.bodyB.label === 'Shot')
+			if (shotCollision.length > 0) {
+				for (let shot of shotCollision) {
+					const shotBody = shot.bodyA.label === 'Shot' ? shot.bodyA : shot.bodyB
+					const otherBody = shotBody === shot.bodyA ? shot.bodyB : shot.bodyA
+					if (otherBody.label === 'Wall') {
+						const shotObj = this.shots.filter(shot => shot.id === shotBody.id)[0]
+						if (shotObj) shotObj.destroy()
+					}
+				}
+			}
+		})
+	}
+
+	initRender(): void {
 		// init matter js canvas if it doesn't exist
 		if (this.renderMode === 'matter-js' && !document.querySelector('[data-pixel-ratio]')) {
 			let matterOptions: object = Object.assign(renderOption, { width: this.width, height: this.height })
 			this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: matterOptions })
 			Matter.Render.run(this.renderer)
 		}
+		this.camera = new Camera(0, 0, this.width, this.height, this)
 		this.objects = []
 		Matter.World.clear(this.world, false)
 		for (let objString of this.map.objects) {
@@ -171,6 +206,11 @@ class Env {
 		}
 	}
 
+	addShot(shot: Shot): void {
+		this.shots.push(shot)
+		Matter.World.add(this.world, shot.body)
+	}
+
 	changeTimeScale(timescale: number): void {
 		this.timescale = timescale
 		this.engine.timing.timeScale = this.timescale
@@ -207,6 +247,9 @@ class Env {
 	update(): void {
 		Matter.Runner.tick(this.engineRunner, this.engine, 1 / this.framerate)
 		this.objects.forEach(obj => obj.update())
+		this.shots.forEach(shot => {
+			shot.update()
+		})
 		this.players.forEach(player => player.update())
 		this.camera.update()
 		if (this.renderMode === 'local') this.render()
@@ -229,6 +272,14 @@ class Env {
 			if (renderObj) {
 				this.addToRenderingStack(<RenderObject>renderObj)
 			}
+		})
+
+		// Shot render
+		this.shots.forEach(shot => {
+			// let renderObj: RenderObject | boolean = obj.toRender()
+			// if (renderObj) {
+			// 	this.addToRenderingStack(<RenderObject>renderObj)
+			// }
 		})
 
 		// Player render
@@ -256,6 +307,7 @@ class Camera {
 	height: number
 	safe_zone_size: number
 	safe_zone: any
+	zoom: number
 	env: Env
 
 	follow_x: boolean
@@ -266,8 +318,9 @@ class Camera {
 		this.env = env
 		this.x = x
 		this.y = y
-		this.width = width
-		this.height = height
+		this.zoom = 1
+		this.width = width / this.zoom
+		this.height = height / this.zoom
 
 		this.safe_zone_size = this.width / 5
 		this.safe_zone = {
@@ -276,6 +329,11 @@ class Camera {
 		}
 		this.follow_x = true
 		this.follow_y = false
+		if (this.env.renderMode == 'matter-js') {
+			console.log(this.env.renderer);
+			(<any>this.env.renderer.bounds).max.x *= this.zoom;
+			(<any>this.env.renderer.bounds).max.y *= this.zoom;
+		}
 	}
 
 	setFocus(player: Player): void {

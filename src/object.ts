@@ -64,7 +64,6 @@ class SolidObject {
 
 	move(vec: Vector): void {
 		Matter.Body.applyForce(this.body, { x: this.body.position.x, y: this.body.position.y }, vec)
-		// TEST : Matter.Composite.translate(this.body, vec)
 	}
 
 	resize(): void {

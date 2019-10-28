@@ -7,8 +7,9 @@
  *     - change `typeof` by `instanceof`
  *     - bug when wallSlide
  *     - dash or grapnel ?
- *     - Add shots
+ *     - Remove shot when they're out of bounds
  *
+ * NOTE: le grappin sera à faire après le systeme de tir et sera juste un projectile avec une contrainte
  * BUG:
  *     - arm angle only change when mouse move not when camera is updated
  */

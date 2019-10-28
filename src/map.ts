@@ -30,6 +30,10 @@ class Map {
 			height: parseInt(this.file.grid.height)
 		}
 		this.objects = this.file.objects
+		this.dimensions = <SizeObject>{
+			width: parseInt(this.file.dimensions.width),
+			height: parseInt(this.file.dimensions.height)
+		}
 
 	}
 }

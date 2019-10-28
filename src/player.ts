@@ -3,6 +3,8 @@ import * as kd from 'keydrown'
 import { SolidObject, Vector } from './object'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
+import { Weapon, AR } from './weapon'
+import { DOMEvent } from './events'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -79,7 +81,6 @@ ________
 */
 
 
-
 class Player {
 	name: string
 	pos: Vector
@@ -117,6 +118,9 @@ class Player {
 	insideLegs: Matter.Body
 	playerLegs: Matter.Body
 	crouchOffset: number
+
+	weapon: Weapon
+	health: number
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env, camera_focus: boolean = false) {
 		this.name = name
@@ -217,6 +221,10 @@ class Player {
 
 		Matter.Body.setMass(this.body, this.mass)
 
+		this.health = 100
+		this.weapon = new AR(this)
+		this.env.events.push(new DOMEvent('click', () => this.weapon.shoot()))
+
 		this.env.addPlayer(this)
 		this.initSetup(setup)
 	}
@@ -252,10 +260,10 @@ class Player {
 				kd_key.up(() => this.uncrouch())
 				break
 			case 'dash':
-				kd_key.press(() => console.log('shift'))
+				kd_key.press(() => console.log('grappeln'))
 				break
 			case 'reload':
-				kd_key.press(() => console.log('r'))
+				kd_key.press(() => this.weapon.reload())
 				break
 		}
 		kd.F.press(() => this.flipDirection())
@@ -289,7 +297,7 @@ class Player {
 	crouch(): void {
 		if (!this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
-			// Matter.Body.setVelocity(this.body, { x: 0, y: -this.jumpForce / 8 })
+			Matter.Body.set(this.body, 'friction', FRICTION / 3)
 			this.isCrouch = true
 		}
 	}
@@ -297,7 +305,7 @@ class Player {
 	uncrouch(): void {
 		if (this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
-			// Matter.Body.setVelocity(this.body, { x: 0, y: this.jumpForce / 8 })
+			Matter.Body.set(this.body, 'friction', FRICTION)
 			this.isCrouch = false
 		}
 	}
@@ -428,9 +436,9 @@ class Player {
 				`wallSlide: ${this.wallSlide}`,
 				`wallSlideSide: ${this.wallSlideSide}`,
 				`frictionStatic: ${this.body.frictionStatic}`,
-				`friction: ${this.body.friction}`,
+				`friction: ${this.body.friction.toFixed(4)}`,
 				`direction: ${this.dir}`,
-				`camera : ${this.env.camera.x}, ${this.env.camera.y}`,
+				`camera : ${this.env.camera.x.toFixed(2)}, ${this.env.camera.y.toFixed(2)}`,
 			],
 			interface: true
 		})
@@ -460,12 +468,12 @@ class Player {
 		/* Colision consequences*/
 		if (!this.onAir) this.onGround()
 		if (this.wallSlide) {
-			this.body.friction = FRICTION / 10
+			// 	this.body.friction = FRICTION / 10
 			this.nbJump = 1
 		} else if (colidingWall) {
-			this.body.friction = 0
+			// 	this.body.friction = 0
 		} else {
-			this.body.friction = FRICTION
+			// 	this.body.friction = FRICTION
 			this.wallSlideSide = 'no-collision'
 		}
 
