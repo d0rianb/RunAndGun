@@ -40,7 +40,7 @@ const renderOption: object = {
 
 class Env {
 	public canvas: HTMLCanvasElement
-	public ctx: CanvasRenderingContext2D
+	private ctx: CanvasRenderingContext2D
 	public width: number = 0 // px
 	public height: number = 0 // px
 	public gridWidth: number // grid unit

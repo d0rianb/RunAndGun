@@ -6,21 +6,21 @@ const shotIDPrefix = 1000
 var lastID: number = 0
 
 class Weapon {
-	player: Player
-	name: string
+	public player: Player
+	public name: string
 
-	fireRange: number // grid unit
-	fireRate: number // [0 - 10]
-	spread: number // angle
-	nbShoot: number
-	shootDamage: number // [0 - 100]
-	shootSpeed: number
+	protected fireRange: number // grid unit
+	protected fireRate: number // [0 - 10]
+	protected spread: number // angle
+	protected nbShoot: number
+	public shootDamage: number // [0 - 100]
+	public shootSpeed: number
 
-	maxAmmo: number
-	currentAmmo: number
-	ammoSize: number // [1 - 4]
+	public maxAmmo: number
+	public currentAmmo: number
+	public ammoSize: number // [1 - 4]
 
-	isReloading: boolean
+	public isReloading: boolean
 
 	constructor(player) {
 		this.player = player
@@ -38,7 +38,7 @@ class Weapon {
 
 	shoot(): void {
 		let { x, y } = this.player.playerArm.vertices[2]
-		new Shot(x, y, this.player.angle, this)
+		new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
 	}
 
 	reload(): void {
@@ -47,23 +47,29 @@ class Weapon {
 }
 
 class Shot {
-	id: number
-	x: number
-	y: number
-	dir: number
-	weapon: Weapon
-	env: Env
-	body: Matter.Body
+	public id: number
+	public x: number
+	public y: number
+	public dir: number
+	public damage: number
+	public speed: number
+	public size: number
+	public weapon: Weapon
+	public env: Env
+	public body: Matter.Body
 
-	constructor(x, y, dir, weapon) {
+	constructor(x, y, dir, dmg, speed, size, weapon) {
 		this.id = shotIDPrefix + lastID
 		lastID++
 		this.x = x
 		this.y = y
 		this.dir = dir
+		this.damage = dmg
+		this.speed = speed
+		this.size = size
 		this.weapon = weapon
 		this.env = this.weapon.player.env
-		this.body = Matter.Bodies.rectangle(this.x, this.y, this.weapon.ammoSize * this.env.relToAbs.x / 3, 6, {
+		this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs.x / 3, 6, {
 			label: 'Shot',
 			id: this.id,
 			friction: 0.95,
@@ -74,7 +80,7 @@ class Shot {
 	}
 
 	update(): void {
-		Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * this.weapon.shootSpeed, y: Math.sin(this.dir) * this.weapon.shootSpeed })
+		Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * this.speed, y: Math.sin(this.dir) * this.speed })
 		this.x = this.body.position.x
 		this.y = this.body.position.y
 		if (this.x > this.env.mapWidth || this.x < 0 || this.y > this.env.mapHeight || this.y < 0) this.destroy()
