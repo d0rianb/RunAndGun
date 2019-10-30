@@ -276,10 +276,9 @@ class Env {
 
 		// Shot render
 		this.shots.forEach(shot => {
-			// let renderObj: RenderObject | boolean = obj.toRender()
-			// if (renderObj) {
-			// 	this.addToRenderingStack(<RenderObject>renderObj)
-			// }
+			const pos: Matter.Vector = shot.body.position
+			let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices })
+			this.addToRenderingStack(renderObj)
 		})
 
 		// Player render
