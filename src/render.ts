@@ -14,6 +14,7 @@ interface RenderOptions {
 	y2?: number,
 	vertices?: Vector[],
 	interface?: boolean,
+	zIndex?: number
 }
 
 
@@ -30,6 +31,7 @@ class RenderObject {
 		this.x = x
 		this.y = y
 		this.options = options
+		if (!this.options.hasOwnProperty('zIndex')) this.options.zIndex = 1
 
 		switch (this.type) {
 			case 'rect':

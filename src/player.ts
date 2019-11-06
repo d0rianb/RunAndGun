@@ -3,7 +3,7 @@ import * as kd from 'keydrown'
 import { SolidObject, Vector } from './object'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
-import { Weapon, AR } from './weapon'
+import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent } from './events'
 import { default as setup } from '../ressources/config/setup.json'
 
@@ -222,8 +222,8 @@ class Player {
 		Matter.Body.setMass(this.body, this.mass)
 
 		this.health = 100
-		this.weapon = new AR(this)
-		this.env.events.push(new DOMEvent('click', () => this.weapon.shoot()))
+		this.weapon = new SMG(this)
+		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
 
 		this.env.addPlayer(this)
 		this.initSetup(setup)

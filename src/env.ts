@@ -1,6 +1,6 @@
 import * as Matter from 'matter-js'
 import * as main from './main'
-import { Vector, SolidObject } from './object'
+import { Vector, SolidObject, ObjectRenderOptions } from './object'
 import { Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
@@ -143,7 +143,7 @@ class Env {
 				}
 			})
 		})
-		Matter.Events.on(this.engine, 'collisionActive', e => {
+		Matter.Events.on(this.engine, 'collisionStart', e => {
 			const shotCollision = e.pairs.filter(pair => pair.bodyA.label === 'Shot' || pair.bodyB.label === 'Shot')
 			if (shotCollision.length > 0) {
 				for (let shot of shotCollision) {
@@ -163,8 +163,17 @@ class Env {
 		if (this.renderMode === 'matter-js' && !document.querySelector('[data-pixel-ratio]')) {
 			let matterOptions: object = Object.assign(renderOption, { width: this.width, height: this.height })
 			this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: matterOptions })
+			Matter.Events.on(this.renderer, 'beforeRender', e => {
+				const allBodies: Matter.Body[] = Matter.Composite.allBodies(this.world)
+				allBodies.sort((a, b) => {
+					const zIndexA = (<ObjectRenderOptions>a.render) && typeof (<ObjectRenderOptions>a.render).zIndex !== 'undefined' ? (<ObjectRenderOptions>a.render).zIndex : 1
+					const zIndexB = (<ObjectRenderOptions>b.render) && typeof (<ObjectRenderOptions>b.render).zIndex !== 'undefined' ? (<ObjectRenderOptions>b.render).zIndex : 1
+					return zIndexA - zIndexB
+				})
+			})
 			Matter.Render.run(this.renderer)
 		}
+
 		this.camera = new Camera(0, 0, this.width, this.height, this)
 		this.objects = []
 		Matter.World.clear(this.world, false)
@@ -181,7 +190,7 @@ class Env {
 					parseFloat(objArray[4]),
 					isStatic,
 					this,
-					<Matter.IBodyDefinition>{
+					<Matter.IChamferableBodyDefinition>{
 						label: 'Wall',
 						friction: 0.0001,
 						chamfer: { radius: 0 },
@@ -292,6 +301,9 @@ class Env {
 		})
 
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+		this.renderingStack.sort((obj1, obj2) => {
+			return obj1.options.zIndex - obj2.options.zIndex
+		})
 		for (let object of this.renderingStack) {
 			Renderer.render(this.ctx, object, this.camera, true)
 		}

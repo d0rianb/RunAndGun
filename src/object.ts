@@ -17,6 +17,14 @@ class Vector {
 	}
 }
 
+interface ObjectOptions extends Matter.IChamferableBodyDefinition {
+	zIndex?: number
+}
+
+interface ObjectRenderOptions extends Matter.IBodyRenderOptions {
+	zIndex?: number
+}
+
 class SolidObject {
 	id: number
 	type: string
@@ -32,7 +40,7 @@ class SolidObject {
 	round: number | boolean
 
 	/* Initalize the object with relative position and size */
-	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, options?: Matter.IChamferableBodyDefinition) {
+	constructor(type: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, isStatic: boolean, env: Env, options?: ObjectOptions) {
 		this.type = type
 		this.isStatic = isStatic
 		this.env = env
@@ -49,11 +57,13 @@ class SolidObject {
 
 		switch (this.type) {
 			case 'rect':
-				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
+				this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options));
+				(<ObjectRenderOptions>this.body.render).zIndex = this.isStatic ? 2 : 1
 				this.id = this.body.id
 				break
 			case 'circle':
-				this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options))
+				this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options));
+				(<ObjectRenderOptions>this.body.render).zIndex = this.isStatic ? 2 : 1
 				this.id = this.body.id
 				break
 		}
@@ -90,7 +100,8 @@ class SolidObject {
 						this.body.position.x,
 						this.body.position.y,
 						<RenderOptions>{
-							vertices: this.body.vertices
+							vertices: this.body.vertices,
+							zIndex: this.isStatic ? 2 : 1
 						}
 					)
 					break
@@ -113,4 +124,4 @@ class SolidObject {
 	}
 }
 
-export { SolidObject, Vector }
+export { SolidObject, Vector, ObjectRenderOptions }

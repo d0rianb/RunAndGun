@@ -19,6 +19,7 @@ class Weapon {
 	public maxAmmo: number
 	public currentAmmo: number
 	public ammoSize: number // [1 - 4]
+	public recoil: number
 
 	public isReloading: boolean
 
@@ -30,6 +31,7 @@ class Weapon {
 		this.spread = Math.PI / 20
 		this.nbShoot = 1
 		this.shootSpeed = 30
+		this.shootDamage = 20
 		this.maxAmmo = 20
 		this.ammoSize = 2
 		this.currentAmmo = this.maxAmmo
@@ -38,6 +40,8 @@ class Weapon {
 
 	shoot(): void {
 		let { x, y } = this.player.playerArm.vertices[2]
+		this.recoil = this.shootDamage * this.nbShoot
+		Matter.Body.applyForce(this.player.body, this.player.pos, <Matter.Vector>{ x: -this.recoil / 150 * Math.cos(this.player.angle), y: -this.recoil / 150 * Math.sin(this.player.angle) })
 		new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
 	}
 
@@ -101,9 +105,25 @@ class AR extends Weapon {
 		this.spread = Math.PI / 20
 		this.nbShoot = 1
 		this.shootSpeed = 30
+		this.shootDamage = 20
 		this.maxAmmo = 20
 		this.ammoSize = 2
 	}
 }
 
-export { Weapon, Shot, AR }
+class SMG extends Weapon {
+	constructor(player) {
+		super(player)
+		this.name = 'SMG'
+		this.fireRange = 900
+		this.fireRate = 10
+		this.spread = Math.PI / 10
+		this.nbShoot = 1
+		this.shootSpeed = 50
+		this.shootDamage = 15
+		this.maxAmmo = 30
+		this.ammoSize = 1
+	}
+}
+
+export { Weapon, Shot, AR, SMG }
