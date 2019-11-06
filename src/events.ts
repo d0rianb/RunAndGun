@@ -9,4 +9,15 @@ class DOMEvent {
 	}
 }
 
-export { DOMEvent }
+class Cooldown {
+	delay: number // ms
+	callback: () => any
+
+	constructor(delay: number, callback: () => any) {
+		this.delay = delay
+		this.callback = callback
+		window.setTimeout(this.callback, this.delay)
+	}
+}
+
+export { DOMEvent, Cooldown }

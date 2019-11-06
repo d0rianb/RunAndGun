@@ -1,6 +1,7 @@
 import * as Matter from 'matter-js'
 import { Env } from './env'
 import { Player } from './player'
+import { Cooldown } from './events'
 
 const shotIDPrefix = 1000
 var lastID: number = 0
@@ -17,11 +18,13 @@ class Weapon {
 	public shootSpeed: number
 
 	public maxAmmo: number
-	public currentAmmo: number
+	public nbAmmo: number
 	public ammoSize: number // [1 - 4]
+	public reloadTime: number // ms
 	public recoil: number
 
 	public isReloading: boolean
+	protected canShoot: boolean
 
 	constructor(player) {
 		this.player = player
@@ -34,19 +37,35 @@ class Weapon {
 		this.shootDamage = 20
 		this.maxAmmo = 20
 		this.ammoSize = 2
-		this.currentAmmo = this.maxAmmo
+		this.reloadTime = 1000
+		this.nbAmmo = this.maxAmmo
 		this.isReloading = false
+		this.canShoot = true
 	}
 
 	shoot(): void {
+		if (this.isReloading || !this.canShoot) return
+		if (this.nbAmmo == 0) {
+			return this.reload()
+		}
 		let { x, y } = this.player.playerArm.vertices[2]
-		this.recoil = this.shootDamage * this.nbShoot
-		Matter.Body.applyForce(this.player.body, this.player.pos, <Matter.Vector>{ x: -this.recoil / 150 * Math.cos(this.player.angle), y: -this.recoil / 150 * Math.sin(this.player.angle) })
+		this.recoil = this.shootDamage * this.nbShoot / 175
+		Matter.Body.applyForce(this.player.body, this.player.pos, <Matter.Vector>{ x: -this.recoil * Math.cos(this.player.angle), y: -this.recoil * Math.sin(this.player.angle) })
 		new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
+		this.nbAmmo -= 1
+		this.canShoot = false
+		let shotCooldown: Cooldown = new Cooldown(1000 / this.fireRate, () => {
+			this.canShoot = true
+		})
 	}
 
-	reload(): void {
 
+	reload(): void {
+		this.isReloading = true
+		let reloadCooldown: Cooldown = new Cooldown(this.reloadTime, () => {
+			this.nbAmmo = this.maxAmmo
+			this.isReloading = false
+		})
 	}
 }
 
@@ -106,8 +125,9 @@ class AR extends Weapon {
 		this.nbShoot = 1
 		this.shootSpeed = 30
 		this.shootDamage = 20
-		this.maxAmmo = 20
+		this.maxAmmo = 10
 		this.ammoSize = 2
+		this.reloadTime = 800
 	}
 }
 
@@ -123,6 +143,7 @@ class SMG extends Weapon {
 		this.shootDamage = 15
 		this.maxAmmo = 30
 		this.ammoSize = 1
+		this.reloadTime = 750
 	}
 }
 

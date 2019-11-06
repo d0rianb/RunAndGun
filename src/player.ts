@@ -121,6 +121,7 @@ class Player {
 
 	weapon: Weapon
 	health: number
+	alive: boolean
 
 	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env, camera_focus: boolean = false) {
 		this.name = name
@@ -222,7 +223,8 @@ class Player {
 		Matter.Body.setMass(this.body, this.mass)
 
 		this.health = 100
-		this.weapon = new SMG(this)
+		this.alive = true
+		this.weapon = new AR(this)
 		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
 
 		this.env.addPlayer(this)
@@ -339,6 +341,11 @@ class Player {
 		this.nbJump = 0
 	}
 
+	checkDeath(): void {
+		this.alive = !((this.health <= 0) || (this.pos.y > this.env.height))
+		if (!this.alive) console.log('Mort')
+	}
+
 	resize(): void {
 		const new_width: number = this.grid_width * this.env.relToAbs.x
 		const new_height: number = this.grid_height * this.env.relToAbs.y
@@ -447,6 +454,7 @@ class Player {
 	}
 
 	update(): void {
+		if (!this.alive) return
 		this.lookAtCursor(this.env.cursorPosition)
 
 		/* Colision Detection */
@@ -468,12 +476,8 @@ class Player {
 		/* Colision consequences*/
 		if (!this.onAir) this.onGround()
 		if (this.wallSlide) {
-			// 	this.body.friction = FRICTION / 10
 			this.nbJump = 1
-		} else if (colidingWall) {
-			// 	this.body.friction = 0
 		} else {
-			// 	this.body.friction = FRICTION
 			this.wallSlideSide = 'no-collision'
 		}
 
@@ -489,6 +493,7 @@ class Player {
 			console.log('FrictionError')
 		}
 		this.pos = new Vector(this.body.position.x, this.body.position.y)
+		this.checkDeath()
 	}
 }
 
