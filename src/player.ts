@@ -81,17 +81,37 @@ ________
 */
 
 
-class Player {
+abstract class Entity {
 	name: string
 	pos: Vector
 	velocity: Vector
 	width: number
 	height: number
 
-	grid_width: number
-	grid_height: number
-
 	env: Env
+	body: Matter.Body
+	composite: Matter.Composite
+	texture: string
+
+	health: number
+	alive: boolean
+
+
+	constructor(name: string, initial_pos: Vector, width: number, height: number, env: Env, ) {
+		this.name = name
+		this.pos = initial_pos
+		this.width = width
+		this.height = height
+		this.env = env
+		this.velocity = new Vector(0, 0)
+		this.health = 100
+		this.alive = this.health > 0
+	}
+
+
+}
+
+class Player extends Entity {
 	body: Matter.Body
 	composite: Matter.Composite
 	texture: string
@@ -111,6 +131,7 @@ class Player {
 	dir: string
 	cameraFocus: boolean = false
 
+	parts: Array<Matter.Body>
 	jumpSensor: Matter.Body
 	playerHead: Matter.Body
 	playerBody: Matter.Body
@@ -120,20 +141,11 @@ class Player {
 	crouchOffset: number
 
 	weapon: Weapon
-	health: number
-	alive: boolean
 
-	constructor(name: string, grid_x: number, grid_y: number, grid_width: number, grid_height: number, env: Env, camera_focus: boolean = false) {
-		this.name = name
-		this.env = env
+	constructor(name: string, x: number, y: number, width: number, height: number, env: Env, camera_focus: boolean = false) {
+		super(name, new Vector(x + width / 2, y + height / 2), width, height, env)
 		this.cameraFocus = camera_focus
-		this.width = grid_width * this.env.relToAbs.x
-		this.height = grid_height * this.env.relToAbs.y
-		this.pos = new Vector(grid_x * this.env.relToAbs.x + this.width / 2, grid_y * this.env.relToAbs.y + this.height / 2)
 		this.velocity = new Vector(0, 0)
-
-		this.grid_width = grid_width
-		this.grid_height = grid_height
 
 		const headY = this.height * 1 / 3
 		const armHeight = 10
@@ -170,11 +182,7 @@ class Player {
 				mask: 0x010001
 			}
 		})
-		// const headSensor = Matter.Bodies.rectangle(0, -57, 48, 45, {
-		// 	// senses if the player's head is empty and can return after crouching
-		// 	sleepThreshold: 99999999999,
-		// 	isSensor: true
-		// })
+
 		this.body = Matter.Body.create({
 			parts: [this.playerBody, this.playerHead, this.playerLegs, this.jumpSensor],
 			inertia: Infinity,
@@ -205,8 +213,6 @@ class Player {
 			constraints: [armConstraint]
 		})
 
-		console.log(this)
-
 		this.groundForce = 0.04 // run force on ground
 		this.airForce = 0.01    // run force in air
 		this.mass = 5
@@ -222,9 +228,7 @@ class Player {
 
 		Matter.Body.setMass(this.body, this.mass)
 
-		this.health = 100
-		this.alive = true
-		this.weapon = new AR(this)
+		this.weapon = new SMG(this)
 		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
 
 		this.env.addPlayer(this)
@@ -347,12 +351,12 @@ class Player {
 	}
 
 	resize(): void {
-		const new_width: number = this.grid_width * this.env.relToAbs.x
-		const new_height: number = this.grid_height * this.env.relToAbs.y
-
 		const ratioX: number = 1 / this.env.oldRelToAbs.x * this.env.relToAbs.x
 		const ratioY: number = 1 / this.env.oldRelToAbs.y * this.env.relToAbs.y
 		const headY = this.height * 1 / 10
+
+		const new_width: number = this.width * ratioX
+		const new_height: number = this.height * ratioY
 
 		this.playerHead = Matter.Bodies.circle(this.playerHead.position.x * ratioX, this.playerHead.position.y * ratioY, new_width / 2, { label: 'PlayerCircle' })
 		this.playerBody = Matter.Bodies.rectangle(this.playerBody.position.x * ratioX, this.playerBody.position.y * ratioY, new_width, new_height - 2 * headY, { label: 'PlayerRect' })

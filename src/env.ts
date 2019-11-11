@@ -5,6 +5,7 @@ import { Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
 import { Shot } from './weapon'
+import { Interface } from './interface'
 import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 
