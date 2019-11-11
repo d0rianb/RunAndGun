@@ -19,6 +19,7 @@ import * as Matter from 'matter-js'
 import { Env } from './env'
 import { Map } from './map'
 import { Player } from './player'
+import { Enemy } from './enemy'
 
 import { default as map1_file } from '../ressources/map/map1.json'
 
@@ -32,6 +33,7 @@ const map1: Map = new Map(map1_file)
 
 let env: Env = new Env(canvas, map1, 'matter-js')
 let player: Player = new Player('Dorian', 300, 200, 40, 88, env, true)
+let enemy1: Enemy = new Enemy('Bad Guy', 1090, 200, 40, 88, env)
 
 env.update();
 

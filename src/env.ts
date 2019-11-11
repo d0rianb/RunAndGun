@@ -1,7 +1,7 @@
 import * as Matter from 'matter-js'
 import * as main from './main'
 import { Vector, SolidObject, ObjectRenderOptions } from './object'
-import { Player } from './player'
+import { Entity, Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
 import { Shot } from './weapon'
@@ -56,16 +56,16 @@ class Env {
 	public engineRunner: Matter.Runner
 	public renderer: Matter.Render
 	public world: Matter.World
-	public events: Array<DOMEvent> = []
+	public events: Array<DOMEvent>
 	public cursorPosition: Vector
 	private tick: number = 0
 	private scale: number = 1
 	private timescale: number = 1
 	public framerate: number = 60  // fps
-	public objects: SolidObject[]
-	public players: Player[]
-	public shots: Shot[]
-	private renderingStack: RenderObject[]
+	public objects: Array<SolidObject>
+	public entities: Array<Entity>
+	public shots: Array<Shot>
+	private renderingStack: Array<RenderObject>
 	public renderMode: string // local | matter-js
 
 	constructor(canvas: HTMLCanvasElement, map: Map, renderMode: string = 'local') {
@@ -81,9 +81,10 @@ class Env {
 		this.world = this.engine.world
 		this.world.gravity.scale = 0//0.0019
 
-		this.players = []
+		this.entities = []
 		this.shots = []
 		this.objects = []
+		this.events = []
 		this.renderingStack = []
 		this.cursorPosition = new Vector(0, 0)
 		this.sizeCanvas()
@@ -127,8 +128,8 @@ class Env {
 		for (let obj of this.objects) {
 			obj.resize()
 		}
-		for (let player of this.players) {
-			player.resize()
+		for (let entity of this.entities) {
+			entity.resize()
 		}
 		Object.assign(this.oldRelToAbs, this.relToAbs)
 	}
@@ -153,6 +154,8 @@ class Env {
 					if (otherBody.label === 'Wall') {
 						const shotObj = this.shots.filter(shot => shot.id === shotBody.id)[0]
 						if (shotObj) shotObj.destroy()
+					} else if (otherBody.label == 'PlayerRect' || otherBody.label == 'PlayerCircle' ) {
+						this.collision(shotBody, otherBody)
 					}
 				}
 			}
@@ -208,17 +211,27 @@ class Env {
 		}
 	}
 
-	addPlayer(player: Player): void {
-		this.players.push(player)
-		Matter.World.add(this.world, player.composite)
-		if (player.cameraFocus) {
-			this.camera.setFocus(player)
+	addEntity(entity: Entity): void {
+		this.entities.push(entity)
+		Matter.World.add(this.world, entity.composite)
+		if (entity instanceof Player && entity.cameraFocus) {
+			this.camera.setFocus(<Player>entity)
 		}
 	}
 
 	addShot(shot: Shot): void {
 		this.shots.push(shot)
 		Matter.World.add(this.world, shot.body)
+	}
+
+	collision(shotBody: Matter.Body, entityBody: Matter.Body): boolean {
+		const shot: Shot = this.shots.filter(shot => shot.id === shotBody.id)[0]
+		if (shot.player.idArray.includes(entityBody.id)) {
+			return false
+		}
+		const entity: Entity = this.entities.filter(entity => entity.idArray.includes(entityBody.id))[0]
+		if (entity) entity.hitBy(shot, entityBody)
+		return true
 	}
 
 	changeTimeScale(timescale: number): void {
@@ -260,7 +273,7 @@ class Env {
 		this.shots.forEach(shot => {
 			shot.update()
 		})
-		this.players.forEach(player => player.update())
+		this.entities.forEach(entity => entity.update())
 		this.camera.update()
 		if (this.renderMode === 'local') this.render()
 		this.tick++
@@ -292,8 +305,8 @@ class Env {
 		})
 
 		// Player render
-		this.players.forEach(player => {
-			let renderObj: RenderObject[] = player.toRender()
+		this.entities.forEach(entity => {
+			let renderObj: RenderObject[] = entity.toRender()
 			if (renderObj) {
 				renderObj.forEach(obj => {
 					this.addToRenderingStack(<RenderObject>obj)

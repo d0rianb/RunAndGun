@@ -82,6 +82,7 @@ ________
 
 
 abstract class Entity {
+	id: number
 	name: string
 	pos: Vector
 	velocity: Vector
@@ -93,6 +94,26 @@ abstract class Entity {
 	composite: Matter.Composite
 	texture: string
 
+	angle: number
+	mass: number
+	groundForce: number
+	airForce: number
+	stoppingFriction: number
+	jumpForce: number
+	onAir: boolean
+	isCrouch: boolean
+	isMoving: boolean
+	dir: string
+
+	jumpSensor: Matter.Body
+	playerHead: Matter.Body
+	playerBody: Matter.Body
+	playerArm: Matter.Body
+	insideLegs: Matter.Body
+	playerLegs: Matter.Body
+	idArray: Array<number>
+	crouchOffset: number
+
 	health: number
 	alive: boolean
 
@@ -103,49 +124,10 @@ abstract class Entity {
 		this.width = width
 		this.height = height
 		this.env = env
+		this.id = this.env.entities.length + 1
 		this.velocity = new Vector(0, 0)
 		this.health = 100
 		this.alive = this.health > 0
-	}
-
-
-}
-
-class Player extends Entity {
-	body: Matter.Body
-	composite: Matter.Composite
-	texture: string
-
-	angle: number
-	mass: number
-	groundForce: number
-	airForce: number
-	stoppingFriction: number
-	jumpForce: number
-	onAir: boolean
-	wallSlide: boolean
-	wallSlideSide: string
-	nbJump: number
-	isCrouch: boolean
-	isMoving: boolean
-	dir: string
-	cameraFocus: boolean = false
-
-	parts: Array<Matter.Body>
-	jumpSensor: Matter.Body
-	playerHead: Matter.Body
-	playerBody: Matter.Body
-	playerArm: Matter.Body
-	insideLegs: Matter.Body
-	playerLegs: Matter.Body
-	crouchOffset: number
-
-	weapon: Weapon
-
-	constructor(name: string, x: number, y: number, width: number, height: number, env: Env, camera_focus: boolean = false) {
-		super(name, new Vector(x + width / 2, y + height / 2), width, height, env)
-		this.cameraFocus = camera_focus
-		this.velocity = new Vector(0, 0)
 
 		const headY = this.height * 1 / 3
 		const armHeight = 10
@@ -182,6 +164,9 @@ class Player extends Entity {
 				mask: 0x010001
 			}
 		})
+
+		let parts: Array<Matter.Body> = [this.playerBody, this.playerHead, this.playerLegs, this.jumpSensor]
+		this.idArray = parts.concat([this.playerArm]).map(body => body.id)
 
 		this.body = Matter.Body.create({
 			parts: [this.playerBody, this.playerHead, this.playerLegs, this.jumpSensor],
@@ -221,17 +206,149 @@ class Player extends Entity {
 		this.onAir = false
 		this.isMoving = false
 		this.isCrouch = false
-		this.wallSlide = false
-		this.wallSlideSide = 'no-collision'
-		this.nbJump = 0
 		this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
 
 		Matter.Body.setMass(this.body, this.mass)
+	}
+
+	resize(): void {
+		const ratioX: number = 1 / this.env.oldRelToAbs.x * this.env.relToAbs.x
+		const ratioY: number = 1 / this.env.oldRelToAbs.y * this.env.relToAbs.y
+		const headY = this.height * 1 / 10
+
+		const new_width: number = this.width * ratioX
+		const new_height: number = this.height * ratioY
+
+		this.playerHead = Matter.Bodies.circle(this.playerHead.position.x * ratioX, this.playerHead.position.y * ratioY, new_width / 2, { label: 'PlayerCircle' })
+		this.playerBody = Matter.Bodies.rectangle(this.playerBody.position.x * ratioX, this.playerBody.position.y * ratioY, new_width, new_height - 2 * headY, { label: 'PlayerRect' })
+		this.jumpSensor = Matter.Bodies.rectangle(this.jumpSensor.position.x * ratioX, this.jumpSensor.position.y * ratioY, new_width, 15, {
+			sleepThreshold: 9e10,
+			label: 'PlayerRect',
+			isSensor: true
+		})
+		this.body = Matter.Body.create({
+			parts: [this.playerBody, this.playerHead, this.jumpSensor],
+			inertia: Infinity,
+			friction: 0.1,
+			frictionAir: 0.018,
+			frictionStatic: 0.8,
+			restitution: 0.12,
+			sleepThreshold: Infinity,
+			collisionFilter: {
+				group: 0,
+				category: 0x001000,
+				mask: 0x010011
+			}
+		})
+	}
+
+	hitBy(shot: Shot, bodyPart: Matter.Body): void {
+		console.log(`${this.name} has been hit by ${shot.player.name} in ${bodyPart.label}`)
+	}
+
+	checkDeath(): void {
+		this.alive = !((this.health <= 0) || (this.pos.y > this.env.height))
+		if (!this.alive) console.log(`${this.name} vient de mourir`)
+	}
+
+	toRender(): RenderObject[] {
+		let renderObjects = []
+		if (this.body.render.visible) {
+			this.composite.bodies.forEach(body => {
+				body.parts.forEach(part => {
+					switch (part.label) {
+						case 'PlayerRect':
+							renderObjects.push(new RenderObject(
+								'poly',
+								part.position.x,
+								part.position.y,
+								<RenderOptions>{
+									vertices: part.vertices
+								}
+							))
+							break
+						case 'PlayerCircle':
+							renderObjects.push(new RenderObject(
+								'circle',
+								part.position.x,
+								part.position.y,
+								<RenderOptions>{ radius: (<any>part).circleRadius }
+							))
+							break
+						case 'ComposedBody':
+							part.parts.forEach(insidePart => {
+								renderObjects.push(new RenderObject(
+									'poly',
+									part.position.x,
+									part.position.y,
+									<RenderOptions>{
+										vertices: part.vertices
+									}
+								))
+							})
+							break
+					}
+				})
+			})
+			this.composite.constraints.forEach(constraint => {
+				renderObjects.push(new RenderObject(
+					'line',
+					constraint.bodyA.position.x + constraint.pointA.x,
+					constraint.bodyA.position.y + constraint.pointA.y,
+					<RenderOptions>{
+						x2: constraint.bodyB.position.x + constraint.pointB.x,
+						y2: constraint.bodyB.position.y + constraint.pointB.y
+					}
+				))
+			})
+		}
+		return renderObjects
+	}
+
+	update(): void {
+		if (!this.alive) return
+
+		/* Colision Detection */
+		this.onAir = this.env.objects.filter(obj => {
+			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
+			return collision.collided && collision.axisNumber === 0
+		}).length === 0
+
+		if ((!this.isMoving || this.body.speed > MAX_SPEED) && !this.onAir) {
+			Matter.Body.setVelocity(this.body, {
+				x: this.body.velocity.x * this.stoppingFriction,
+				y: this.body.velocity.y * this.stoppingFriction
+			})
+		} else {
+			this.isMoving = false
+		}
+
+		this.pos = new Vector(this.body.position.x, this.body.position.y)
+		this.checkDeath()
+	}
+
+}
+
+class Player extends Entity {
+
+	public cameraFocus: boolean = false
+	private wallSlide: boolean
+	private wallSlideSide: string
+	private nbJump: number
+	public weapon: Weapon
+
+	constructor(name: string, x: number, y: number, width: number, height: number, env: Env, camera_focus: boolean = false) {
+		super(name, new Vector(x + width / 2, y + height / 2), width, height, env)
+		this.cameraFocus = camera_focus
+
+		this.nbJump = 0
+		this.wallSlide = false
+		this.wallSlideSide = 'no-collision'
 
 		this.weapon = new SMG(this)
 		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
 
-		this.env.addPlayer(this)
+		this.env.addEntity(this)
 		this.initSetup(setup)
 	}
 
@@ -343,42 +460,6 @@ class Player extends Entity {
 
 	onGround(): void {
 		this.nbJump = 0
-	}
-
-	checkDeath(): void {
-		this.alive = !((this.health <= 0) || (this.pos.y > this.env.height))
-		if (!this.alive) console.log('Mort')
-	}
-
-	resize(): void {
-		const ratioX: number = 1 / this.env.oldRelToAbs.x * this.env.relToAbs.x
-		const ratioY: number = 1 / this.env.oldRelToAbs.y * this.env.relToAbs.y
-		const headY = this.height * 1 / 10
-
-		const new_width: number = this.width * ratioX
-		const new_height: number = this.height * ratioY
-
-		this.playerHead = Matter.Bodies.circle(this.playerHead.position.x * ratioX, this.playerHead.position.y * ratioY, new_width / 2, { label: 'PlayerCircle' })
-		this.playerBody = Matter.Bodies.rectangle(this.playerBody.position.x * ratioX, this.playerBody.position.y * ratioY, new_width, new_height - 2 * headY, { label: 'PlayerRect' })
-		this.jumpSensor = Matter.Bodies.rectangle(this.jumpSensor.position.x * ratioX, this.jumpSensor.position.y * ratioY, new_width, 15, {
-			sleepThreshold: 9e10,
-			label: 'PlayerRect',
-			isSensor: true
-		})
-		this.body = Matter.Body.create({
-			parts: [this.playerBody, this.playerHead, this.jumpSensor],
-			inertia: Infinity,
-			friction: 0.1,
-			frictionAir: 0.018,
-			frictionStatic: 0.8,
-			restitution: 0.12,
-			sleepThreshold: Infinity,
-			collisionFilter: {
-				group: 0,
-				category: 0x001000,
-				mask: 0x010011
-			}
-		})
 	}
 
 	toRender(): RenderObject[] {
@@ -501,4 +582,5 @@ class Player extends Entity {
 	}
 }
 
-export { Player }
+
+export { Entity, Player }

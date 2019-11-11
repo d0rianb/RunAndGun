@@ -78,6 +78,7 @@ class Shot {
 	public speed: number
 	public size: number
 	public weapon: Weapon
+	public player: Player
 	public env: Env
 	public body: Matter.Body
 
@@ -91,7 +92,8 @@ class Shot {
 		this.speed = speed
 		this.size = size
 		this.weapon = weapon
-		this.env = this.weapon.player.env
+		this.player = this.weapon.player
+		this.env = this.player.env
 		this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs.x / 3, 6, {
 			label: 'Shot',
 			id: this.id,

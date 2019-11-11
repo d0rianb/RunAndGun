@@ -1,6 +1,8 @@
 .DS_Store
 node_modules/
+
 prototype/
-ressources/
 dist/
 src/ngon_*
+
+ressources/**/*[.png, .jpg, .jpeg, .psd]
