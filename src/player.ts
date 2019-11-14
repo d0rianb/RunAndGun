@@ -5,6 +5,7 @@ import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent } from './events'
+import { Particles } from './particles'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -68,6 +69,7 @@ const BODY_COLLISION_FILTER = 0x0010
 const ARM_COLLISION_FILTER = 0x0011
 
 const armOffsetX = 5
+const armHeight = 10
 
 /*
 PLAYER BODY
@@ -111,6 +113,7 @@ abstract class Entity {
 	playerArm: Matter.Body
 	insideLegs: Matter.Body
 	playerLegs: Matter.Body
+	armConstraint: Matter.Constraint
 	idArray: Array<number>
 	crouchOffset: number
 
@@ -129,8 +132,23 @@ abstract class Entity {
 		this.health = 100
 		this.alive = this.health > 0
 
+		this.groundForce = 0.04 // run force on ground
+		this.airForce = 0.01    // run force in air
+		this.mass = 5
+		this.jumpForce = 0.3
+		this.stoppingFriction = 0.70
+		this.onAir = false
+		this.isMoving = false
+		this.isCrouch = false
+
+		this.createBody()
+		this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
+
+		Matter.Body.setMass(this.body, this.mass)
+	}
+
+	createBody(): void {
 		const headY = this.height * 1 / 3
-		const armHeight = 10
 		const bodyHeight = this.height * 2 / 3
 		const legsOffsetY = this.height * 1 / 3
 
@@ -140,7 +158,6 @@ abstract class Entity {
 		this.playerBody = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'blue' } })
 		this.insideLegs = Matter.Bodies.rectangle(this.pos.x, this.pos.y + legsOffsetY, this.width, bodyHeight / 2, { label: 'PlayerRect', render: { fillStyle: 'green' } })
 		this.jumpSensor = Matter.Bodies.rectangle(this.pos.x, this.pos.y + this.height / 2, this.width, 4, {
-			// this sensor check if the player is on the ground to enable jumping
 			sleepThreshold: 9e10,
 			label: 'PlayerRect',
 			isSensor: true,
@@ -183,32 +200,20 @@ abstract class Entity {
 			}
 		})
 
-		let armConstraint = Matter.Constraint.create({
+		this.armConstraint = Matter.Constraint.create({
 			bodyA: this.body,
 			pointA: { x: this.width / 2 - armOffsetX, y: 0 },
 			bodyB: this.playerArm,
 			pointB: { x: -this.width / 2, y: 0 },
-			stiffness: 0.2,
+			stiffness: 1,
 			length: 0
 		})
 
 		this.composite = Matter.Composite.create({
 			label: 'Player',
 			bodies: [this.body, this.playerArm],
-			constraints: [armConstraint]
+			constraints: [this.armConstraint]
 		})
-
-		this.groundForce = 0.04 // run force on ground
-		this.airForce = 0.01    // run force in air
-		this.mass = 5
-		this.jumpForce = 0.3
-		this.stoppingFriction = 0.70
-		this.onAir = false
-		this.isMoving = false
-		this.isCrouch = false
-		this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
-
-		Matter.Body.setMass(this.body, this.mass)
 	}
 
 	resize(): void {
@@ -242,8 +247,35 @@ abstract class Entity {
 		})
 	}
 
+	flipDirection(): void {
+		this.dir = this.dir === 'left' ? 'right' : 'left'
+		let sign = this.dir === 'left' ? +1 : -1
+		Matter.Composite.remove(this.composite, this.armConstraint)
+		Matter.Body.setAngle(this.playerArm, 0)
+		this.armConstraint = Matter.Constraint.create({
+			bodyA: this.body,
+			pointA: { x: sign * this.width / 2 - sign * armOffsetX, y: 0 },
+			bodyB: this.playerArm,
+			pointB: { x: -this.width / 2, y: 0 },
+			stiffness: 1,
+			length: 0
+		})
+		Matter.Composite.add(this.composite, this.armConstraint)
+		Matter.Body.setAngle(this.playerArm, this.angle)
+		Matter.Body.setInertia(this.body, Infinity)
+		Matter.Body.setInertia(this.playerArm, Infinity)
+	}
+
 	hitBy(shot: Shot, bodyPart: Matter.Body): void {
-		console.log(`${this.name} has been hit by ${shot.player.name} in ${bodyPart.label}`)
+		this.health -= shot.damage
+		if (this.health < 0) {
+			this.health = 0
+		}
+
+		for (let i = 0; i < 2; i++) {
+			let particule: Particles = new Particles(<Vector>this.body.position)
+			this.env.particles.push(particule)
+		}
 	}
 
 	checkDeath(): void {
@@ -345,8 +377,9 @@ class Player extends Entity {
 		this.wallSlide = false
 		this.wallSlideSide = 'no-collision'
 
-		this.weapon = new SMG(this)
+		this.weapon = new AR(this)
 		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
+		this.env.events.push(new DOMEvent('mouseup', () => this.weapon.stopShoot()))
 
 		this.env.addEntity(this)
 		this.initSetup(setup)
@@ -439,23 +472,19 @@ class Player extends Entity {
 			cursor.x - this.pos.x
 		)
 
-		const anchorArmVector: Vector = { x: this.body.position.x + this.width / 2 - armOffsetX, y: this.body.position.y }
+		let anchorArmVector: Vector = new Vector(0, 0)
+		if (this.dir === 'right') {
+			anchorArmVector = { x: this.body.position.x + this.width / 2 - armOffsetX, y: this.body.position.y }
+		} else if (this.dir === 'left') {
+			anchorArmVector = { x: this.body.position.x - this.width / 2 + armOffsetX, y: this.body.position.y }
+		}
 		const targetAngle = Matter.Vector.angle(anchorArmVector, cursor)
 		const flipAngle = Matter.Vector.angle(this.body.position, cursor);
 		(Matter as any).Body.rotate(this.playerArm, targetAngle - this.playerArm.angle, anchorArmVector)
-		const dirFactor = this.dir === 'left' ? 1 : -1
-		if ((flipAngle + Math.PI / 2) * dirFactor < 0 && (flipAngle + Math.PI / 2) < Math.PI) {
+		const dirFactor = this.dir === 'left' ? -1 : +1
+		if (Math.cos(this.angle) * dirFactor > 0) {
 			this.flipDirection()
 		}
-	}
-
-	flipDirection(): void {
-		this.dir = this.dir === 'left' ? 'right' : 'left'
-		// Matter.Composite.setAngle(this.composite, 0)
-		// Matter.Body.scale(this.body, -1, 1, this.body.position)
-		// Matter.Body.scale(this.playerArm, -1, 1, this.body.position)
-		Matter.Body.setInertia(this.body, Infinity)
-		Matter.Body.setInertia(this.playerArm, Infinity)
 	}
 
 	onGround(): void {

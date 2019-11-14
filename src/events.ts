@@ -11,9 +11,9 @@ class DOMEvent {
 
 class Cooldown {
 	delay: number // ms
-	callback: () => any
+	callback: () => any | void
 
-	constructor(delay: number, callback: () => any) {
+	constructor(delay: number, callback: () => any |  void) {
 		this.delay = delay
 		this.callback = callback
 		window.setTimeout(this.callback, this.delay)

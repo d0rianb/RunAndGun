@@ -5,6 +5,7 @@ import { Entity, Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
 import { Shot } from './weapon'
+import { Particles } from './particles'
 import { Interface } from './interface'
 import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
@@ -65,6 +66,7 @@ class Env {
 	public objects: Array<SolidObject>
 	public entities: Array<Entity>
 	public shots: Array<Shot>
+	public particles: Array<Particles> = []
 	private renderingStack: Array<RenderObject>
 	public renderMode: string // local | matter-js
 
@@ -226,12 +228,14 @@ class Env {
 
 	collision(shotBody: Matter.Body, entityBody: Matter.Body): boolean {
 		const shot: Shot = this.shots.filter(shot => shot.id === shotBody.id)[0]
-		if (shot.player.idArray.includes(entityBody.id)) {
+		if (shot && shot.player.idArray.includes(entityBody.id)) {
 			return false
 		}
 		const entity: Entity = this.entities.filter(entity => entity.idArray.includes(entityBody.id))[0]
-		if (entity) entity.hitBy(shot, entityBody)
-		return true
+		if (entity && shot) {
+			entity.hitBy(shot, entityBody)
+		}
+		return entity != null
 	}
 
 	changeTimeScale(timescale: number): void {
@@ -273,6 +277,7 @@ class Env {
 		this.shots.forEach(shot => {
 			shot.update()
 		})
+		this.particles.forEach(particule => particule.update())
 		this.entities.forEach(entity => entity.update())
 		this.camera.update()
 		if (this.renderMode === 'local') this.render()
@@ -303,6 +308,9 @@ class Env {
 			let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices })
 			this.addToRenderingStack(renderObj)
 		})
+
+		this.particles.forEach(particule => particule.render(this))
+
 
 		// Player render
 		this.entities.forEach(entity => {

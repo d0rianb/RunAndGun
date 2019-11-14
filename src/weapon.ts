@@ -25,6 +25,7 @@ class Weapon {
 
 	public isReloading: boolean
 	protected canShoot: boolean
+	protected autofire: boolean
 
 	constructor(player) {
 		this.player = player
@@ -41,10 +42,12 @@ class Weapon {
 		this.nbAmmo = this.maxAmmo
 		this.isReloading = false
 		this.canShoot = true
+		this.autofire = false
 	}
 
-	shoot(): void {
+	shoot(auto: boolean = false): void {
 		if (this.isReloading || !this.canShoot) return
+		if (auto && !this.autofire) return
 		if (this.nbAmmo == 0) {
 			return this.reload()
 		}
@@ -57,6 +60,16 @@ class Weapon {
 		let shotCooldown: Cooldown = new Cooldown(1000 / this.fireRate, () => {
 			this.canShoot = true
 		})
+		if (!auto) {
+			this.autofire = true
+		}
+		if (this.autofire) {
+			new Cooldown(1000 / this.fireRate, () => this.shoot(true))
+		}
+	}
+
+	stopShoot(): void {
+		this.autofire = false
 	}
 
 
