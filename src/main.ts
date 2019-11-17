@@ -34,11 +34,14 @@ const map1: Map = new Map(map1_file)
 let env: Env = new Env(canvas, map1, 'matter-js')
 let player: Player = new Player('Dorian', 300, 200, 40, 88, env, true)
 let enemy1: Enemy = new Enemy('Bad Guy', 200, 200, 40, 88, env) //1090
+let enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env) //1090
 
 env.update();
 
 (<any>window).env = env;
 (<any>window).player = player;
 (<any>window).enemy1 = enemy1;
+
+canvas.focus()
 
 export { DEBUG }

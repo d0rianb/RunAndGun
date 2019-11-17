@@ -118,15 +118,22 @@ class Shot {
 	}
 
 	update(): void {
-		Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * this.speed, y: Math.sin(this.dir) * this.speed })
+		let timescale: number = this.env.timescale
+		const speed: number = this.speed * timescale
+		Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
 		this.x = this.body.position.x
 		this.y = this.body.position.y
-		if (this.x > this.env.mapWidth || this.x < 0 || this.y > this.env.mapHeight || this.y < 0) this.destroy()
+		if (this.x > this.env.mapWidth
+			|| this.x < -500
+			|| this.y > this.env.mapHeight
+			|| this.y < 0) {
+			this.destroy()
+		}
 	}
 
 	destroy(): void {
 		this.env.shots = this.env.shots.filter(shot => shot.id !== this.id)
-		Matter.Composite.remove(this.env.world, this.body)
+		Matter.World.remove(this.env.world, this.body)
 	}
 }
 

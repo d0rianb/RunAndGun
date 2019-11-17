@@ -5,7 +5,7 @@ import { Entity, Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
 import { Shot } from './weapon'
-import { Particles } from './particles'
+import { Particle } from './particles'
 import { Interface } from './interface'
 import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
@@ -61,12 +61,12 @@ class Env {
 	public cursorPosition: Vector
 	private tick: number = 0
 	private scale: number = 1
-	private timescale: number = 1
+	public timescale: number = 1
 	public framerate: number = 60  // fps
 	public objects: Array<SolidObject>
 	public entities: Array<Entity>
 	public shots: Array<Shot>
-	public particles: Array<Particles> = []
+	public particles: Array<Particle>
 	private renderingStack: Array<RenderObject>
 	public renderMode: string // local | matter-js
 
@@ -86,6 +86,7 @@ class Env {
 		this.entities = []
 		this.shots = []
 		this.objects = []
+		this.particles = []
 		this.events = []
 		this.renderingStack = []
 		this.cursorPosition = new Vector(0, 0)
@@ -224,6 +225,11 @@ class Env {
 	addShot(shot: Shot): void {
 		this.shots.push(shot)
 		Matter.World.add(this.world, shot.body)
+	}
+
+	removeShot(shot: Shot): void {
+		this.shots = this.shots.filter(envShot => envShot.id === shot.id)
+		Matter.World.remove(this.world, shot.body)
 	}
 
 	collision(shotBody: Matter.Body, entityBody: Matter.Body): boolean {

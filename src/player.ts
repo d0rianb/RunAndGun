@@ -4,8 +4,8 @@ import { SolidObject, Vector } from './object'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
-import { DOMEvent } from './events'
-import { Particles } from './particles'
+import { DOMEvent, Cooldown } from './events'
+import { Particle, ParticuleGenerator } from './particles'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -60,6 +60,7 @@ const KEY_MAP = {
 }
 const MAX_SPEED = 12
 const SECOND_JUMP_COEFF = 0.8
+const SLOW_MOTION_DURATION = 600 //ms
 
 const FRICTION = 0.01
 const STATIC_FRICTION = 0.25
@@ -266,16 +267,27 @@ abstract class Entity {
 		Matter.Body.setInertia(this.playerArm, Infinity)
 	}
 
+	distTo(player: Entity): number {
+		const deltaX: number = this.pos.x - player.pos.x
+		const deltaY: number = this.pos.y - player.pos.y
+		return Math.sqrt(deltaX ** 2 + deltaY ** 2)
+	}
+
+	getCloserPlayer(): Entity | boolean {
+		const closerPlayer: Entity[] = this.env.entities.sort((a, b) => {
+			return this.distTo(a) - this.distTo(b)
+		})
+		return closerPlayer[1] // closerPlayer[0] is the player
+	}
+
 	hitBy(shot: Shot, bodyPart: Matter.Body): void {
 		this.health -= shot.damage
 		if (this.health < 0) {
 			this.health = 0
 		}
+		this.env.removeShot(shot)
+		let PG: ParticuleGenerator = new ParticuleGenerator(5, this.body.position, 200, this.env)
 
-		for (let i = 0; i < 2; i++) {
-			let particule: Particles = new Particles(<Vector>this.body.position)
-			this.env.particles.push(particule)
-		}
 	}
 
 	checkDeath(): void {
@@ -422,7 +434,8 @@ class Player extends Entity {
 				kd_key.press(() => this.weapon.reload())
 				break
 		}
-		kd.F.press(() => this.flipDirection())
+		kd.F.press(() => this.slowMotion())
+		kd.E.press(() => this.autoShoot())
 		kd.G.press(() => this.env.swicthRenderer())
 	}
 
@@ -466,7 +479,25 @@ class Player extends Entity {
 		}
 	}
 
-	lookAtCursor(cursor: Vector): void {
+	autoShoot(): void {
+		const target: Entity | boolean = this.getCloserPlayer()
+		if (target) {
+			this.lookAt((<Entity>target).pos)
+			this.weapon.shoot()
+			this.weapon.stopShoot()
+		}
+	}
+
+	slowMotion(): void {
+		const slowMotionFactor: number = 0.33
+		if (this.env.timescale === 1) {
+			this.env.changeTimeScale(slowMotionFactor)
+			const cd: Cooldown = new Cooldown(SLOW_MOTION_DURATION, () => this.env.changeTimeScale(1))
+		}
+
+	}
+
+	lookAt(cursor: Vector): void {
 		this.angle = Math.atan2(
 			cursor.y - this.pos.y,
 			cursor.x - this.pos.x
@@ -569,7 +600,7 @@ class Player extends Entity {
 
 	update(): void {
 		if (!this.alive) return
-		this.lookAtCursor(this.env.cursorPosition)
+		this.lookAt(this.env.cursorPosition)
 
 		/* Colision Detection */
 		this.onAir = this.env.objects.filter(obj => {
