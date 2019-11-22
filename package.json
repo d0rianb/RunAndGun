@@ -10,9 +10,11 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"file-loader": "^4.2.0",
 		"keydrown": "^1.2.7",
 		"matter-js": "^0.14.2",
-		"typescript": "^3.5.3"
+		"typescript": "^3.5.3",
+		"url-loader": "^2.2.0"
 	},
 	"devDependencies": {
 		"@types/matter-js": "^0.10.2",

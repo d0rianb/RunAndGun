@@ -1,6 +1,6 @@
 import * as Matter from 'matter-js'
 import * as kd from 'keydrown'
-import { SolidObject, Vector } from './object'
+import { Vector } from './object'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
@@ -214,37 +214,6 @@ abstract class Entity {
 			label: 'Player',
 			bodies: [this.body, this.playerArm],
 			constraints: [this.armConstraint]
-		})
-	}
-
-	resize(): void {
-		const ratioX: number = 1 / this.env.oldRelToAbs.x * this.env.relToAbs.x
-		const ratioY: number = 1 / this.env.oldRelToAbs.y * this.env.relToAbs.y
-		const headY = this.height * 1 / 10
-
-		const new_width: number = this.width * ratioX
-		const new_height: number = this.height * ratioY
-
-		this.playerHead = Matter.Bodies.circle(this.playerHead.position.x * ratioX, this.playerHead.position.y * ratioY, new_width / 2, { label: 'PlayerCircle' })
-		this.playerBody = Matter.Bodies.rectangle(this.playerBody.position.x * ratioX, this.playerBody.position.y * ratioY, new_width, new_height - 2 * headY, { label: 'PlayerRect' })
-		this.jumpSensor = Matter.Bodies.rectangle(this.jumpSensor.position.x * ratioX, this.jumpSensor.position.y * ratioY, new_width, 15, {
-			sleepThreshold: 9e10,
-			label: 'PlayerRect',
-			isSensor: true
-		})
-		this.body = Matter.Body.create({
-			parts: [this.playerBody, this.playerHead, this.jumpSensor],
-			inertia: Infinity,
-			friction: 0.1,
-			frictionAir: 0.018,
-			frictionStatic: 0.8,
-			restitution: 0.12,
-			sleepThreshold: Infinity,
-			collisionFilter: {
-				group: 0,
-				category: 0x001000,
-				mask: 0x010011
-			}
 		})
 	}
 
@@ -482,9 +451,8 @@ class Player extends Entity {
 	autoShoot(): void {
 		const target: Entity | boolean = this.getCloserPlayer()
 		if (target) {
-			this.lookAt((<Entity>target).pos)
-			this.weapon.shoot()
-			this.weapon.stopShoot()
+			this.lookAt((<Entity>target).playerHead.position)
+			this.weapon.singleShoot()
 		}
 	}
 
@@ -497,10 +465,10 @@ class Player extends Entity {
 
 	}
 
-	lookAt(cursor: Vector): void {
+	lookAt(position: Vector): void {
 		this.angle = Math.atan2(
-			cursor.y - this.pos.y,
-			cursor.x - this.pos.x
+			position.y - this.pos.y,
+			position.x - this.pos.x
 		)
 
 		let anchorArmVector: Vector = new Vector(0, 0)
@@ -509,9 +477,9 @@ class Player extends Entity {
 		} else if (this.dir === 'left') {
 			anchorArmVector = { x: this.body.position.x - this.width / 2 + armOffsetX, y: this.body.position.y }
 		}
-		const targetAngle = Matter.Vector.angle(anchorArmVector, cursor)
-		const flipAngle = Matter.Vector.angle(this.body.position, cursor);
-		(Matter as any).Body.rotate(this.playerArm, targetAngle - this.playerArm.angle, anchorArmVector)
+		const targetAngle = Matter.Vector.angle(anchorArmVector, position)
+		const flipAngle = Matter.Vector.angle(this.body.position, position);
+		(<any>Matter).Body.rotate(this.playerArm, targetAngle - this.playerArm.angle, anchorArmVector)
 		const dirFactor = this.dir === 'left' ? -1 : +1
 		if (Math.cos(this.angle) * dirFactor > 0) {
 			this.flipDirection()
@@ -604,6 +572,9 @@ class Player extends Entity {
 
 		/* Colision Detection */
 		this.onAir = this.env.objects.filter(obj => {
+			if (obj.type == 'circle') {
+				console.log(obj)
+			}
 			let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
 			return collision.collided && collision.axisNumber === 0
 		}).length === 0

@@ -1,5 +1,5 @@
 import * as Matter from 'matter-js'
-import { SolidObject, Vector } from './object'
+import { Vector } from './object'
 import { Entity } from './player'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'

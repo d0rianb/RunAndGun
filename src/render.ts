@@ -14,7 +14,8 @@ interface RenderOptions {
 	y2?: number,
 	vertices?: Vector[],
 	interface?: boolean,
-	zIndex?: number
+	zIndex?: number,
+	sprite?: HTMLImageElement
 }
 
 
@@ -38,6 +39,19 @@ class RenderObject {
 				this.width = this.options.width
 				this.height = this.options.height
 				break
+		}
+	}
+
+	renderSprite(ctx: CanvasRenderingContext2D, camera: Camera): void {
+		if (this.type === 'rect') {
+			if (!this.options.sprite) return
+			ctx.drawImage(
+				this.options.sprite,
+				this.x - this.width / 2,
+				this.y - this.height / 2,
+				this.width,
+				this.height
+			)
 		}
 	}
 
@@ -121,6 +135,9 @@ class RenderObject {
 class Renderer {
 	static render(ctx: CanvasRenderingContext2D, object: RenderObject, camera: Camera, wireframe: boolean = false) {
 		object.render(ctx, camera, wireframe)
+	}
+	static renderSprite(ctx: CanvasRenderingContext2D, object: RenderObject, camera: Camera) {
+		object.renderSprite(ctx, camera)
 	}
 }
 

@@ -72,6 +72,11 @@ class Weapon {
 		this.autofire = false
 	}
 
+	singleShoot(): void {
+		this.shoot()
+		this.stopShoot()
+	}
+
 
 	reload(): void {
 		this.isReloading = true
@@ -107,7 +112,7 @@ class Shot {
 		this.weapon = weapon
 		this.player = this.weapon.player
 		this.env = this.player.env
-		this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs.x / 3, 6, {
+		this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs / 3, 6, {
 			label: 'Shot',
 			id: this.id,
 			friction: 0.95,
