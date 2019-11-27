@@ -11,7 +11,7 @@ import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 
 const WALL_COLLISION_FILTER = 0x0010
-const GRAVITY_SCALE = 0.0019
+const GRAVITY_SCALE = 0.00195
 
 let debug = main.DEBUG
 
@@ -99,7 +99,7 @@ class Env {
 		this.events.push(new DOMEvent('mousemove', e => this.updateCursorPosition(e)))
 		this.initMatterEngine()
 		this.initRender()
-		this.map.init(this)
+		this.initMap()
 	}
 
 	getWindowDimensions(): number[] {
@@ -168,33 +168,12 @@ class Env {
 	initMap(): void {
 		this.objects = []
 		Matter.World.clear(this.world, false)
-		for (let objString of this.map.objects) {
-			let objArray: Array<string> = objString.split(/[\s,]+/)
-			let type: string = objArray[0]
-			if (type !== 'format') {
-				let isStatic: boolean = objArray.length > 5 && objArray[5] === 'static'
-				// let solidObj: MapElement = new MapElement(
-				// objArray[0],
-				// 	parseFloat(objArray[1]),
-				// 	parseFloat(objArray[2]),
-				// 	parseFloat(objArray[3]),
-				// 	parseFloat(objArray[4]),
-				// 	isStatic,
-				// 	this,
-				// 	<Matter.IChamferableBodyDefinition>{
-				// 		label: 'Wall',
-				// 		friction: 0.0001,
-				// 		chamfer: { radius: 0 },
-				// 		mass: 5,
-				// 		frictionStatic: 0.1,
-				// 		collisionFilter: {
-				// 			group: 0,
-				// 			category: WALL_COLLISION_FILTER,
-				// 			mask: 0x010011
-				// 		}
-				// 	})
-			}
-		}
+		this.map.init(this)
+		this.objects.forEach(mapEl => {
+			mapEl.tiles.forEach(tile => {
+				tile.defineTexture()
+			})
+		})
 	}
 
 	addEntity(entity: Entity): void {
@@ -305,7 +284,6 @@ class Env {
 
 		this.particles.forEach(particule => particule.render(this))
 
-
 		// Player render
 		this.entities.forEach(entity => {
 			let renderObj: RenderObject[] = entity.toRender()
@@ -317,13 +295,8 @@ class Env {
 		})
 
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-		this.renderingStack.sort((obj1, obj2) => {
-			return obj1.options.zIndex - obj2.options.zIndex
-		})
-		for (let object of this.renderingStack) {
-			Renderer.render(this.ctx, object, this.camera, true)
-			Renderer.renderSprite(this.ctx, object, this.camera)
-		}
+		Renderer.render(this.renderingStack, this.ctx, this.camera)
+		Renderer.renderSprite(this.renderingStack, this.ctx, this.camera)
 	}
 }
 
@@ -389,10 +362,6 @@ class Camera {
 				}
 			}
 		}
-	}
-
-	render(): void {
-
 	}
 }
 

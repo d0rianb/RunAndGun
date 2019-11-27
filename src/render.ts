@@ -1,5 +1,6 @@
 import { Vector } from './object'
 import { Camera } from './env'
+import { Texture } from './texture'
 
 interface RenderOptions {
 	width?: number,
@@ -14,8 +15,9 @@ interface RenderOptions {
 	y2?: number,
 	vertices?: Vector[],
 	interface?: boolean,
-	zIndex?: number,
-	sprite?: HTMLImageElement
+	texture?: Texture,
+	zIndex?: number
+
 }
 
 
@@ -32,7 +34,6 @@ class RenderObject {
 		this.x = x
 		this.y = y
 		this.options = options
-		if (!this.options.hasOwnProperty('zIndex')) this.options.zIndex = 1
 
 		switch (this.type) {
 			case 'rect':
@@ -43,15 +44,22 @@ class RenderObject {
 	}
 
 	renderSprite(ctx: CanvasRenderingContext2D, camera: Camera): void {
-		if (this.type === 'rect') {
-			if (!this.options.sprite) return
-			ctx.drawImage(
-				this.options.sprite,
-				this.x - this.width / 2,
-				this.y - this.height / 2,
-				this.width,
-				this.height
-			)
+		if (this.type === 'rect' || this.type === 'poly') {
+			if (this.options.texture) {
+				let texture: Texture = this.options.texture
+				console.log(texture)
+				ctx.save()
+				ctx.translate(this.x, this.y)
+				ctx.rotate(this.options.texture.rotation)
+				ctx.drawImage(
+					this.options.texture.image,
+					-this.width / 2,
+					-this.height / 2,
+					this.width,
+					this.height
+				)
+				ctx.restore()
+			}
 		}
 	}
 
@@ -133,11 +141,26 @@ class RenderObject {
 }
 
 class Renderer {
-	static render(ctx: CanvasRenderingContext2D, object: RenderObject, camera: Camera, wireframe: boolean = false) {
-		object.render(ctx, camera, wireframe)
+
+	static render(renderStack: Array<RenderObject>, ctx: CanvasRenderingContext2D, camera: Camera) {
+		renderStack.sort((obj1, obj2) => {
+			return obj1.options.zIndex - obj2.options.zIndex
+		})
+
+		renderStack.forEach(object => {
+			object.render(ctx, camera, true)
+
+		})
 	}
-	static renderSprite(ctx: CanvasRenderingContext2D, object: RenderObject, camera: Camera) {
-		object.renderSprite(ctx, camera)
+
+	static renderSprite(renderStack: Array<RenderObject>, ctx: CanvasRenderingContext2D, camera: Camera) {
+		renderStack.sort((obj1, obj2) => {
+			return obj1.options.zIndex - obj2.options.zIndex
+		})
+
+		renderStack.forEach(object => {
+			object.renderSprite(ctx, camera)
+		})
 	}
 }
 

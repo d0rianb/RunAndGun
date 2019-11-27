@@ -10,7 +10,7 @@
 	},
 	"objects": [
     "format type       x     y     w     h    inertie    name",
-            "rect      0    17    90    1     static     floor",
+            "rect      0    17    90    2     static     floor",
             "rect      2    10     2    1     static     plateform-1",
             "rect     22    10     1    1     static     plateform-2",
             "rect     12     3     1   11     static     vertical-2",

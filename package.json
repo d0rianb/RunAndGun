@@ -19,6 +19,7 @@
 	"devDependencies": {
 		"@types/matter-js": "^0.10.2",
 		"@types/node": "^12.7.2",
+		"@types/plotly.js": "^1.44.17",
 		"json-loader": "^0.5.7",
 		"raw-loader": "^3.1.0",
 		"ts-loader": "^6.0.4",

@@ -39,6 +39,7 @@ class Grid {
 
 	updateCell(newCell: Cell): void {
 		if (!this.cells.includes(newCell)) return
+		console.log(newCell)
 		this.defineNeighboors()
 		this.cells[this.cells.indexOf(newCell)] = newCell
 	}
@@ -48,7 +49,7 @@ class Grid {
 			cell.neighboor.top = cell.y >= 1 ? this.cells.filter(othercell => othercell.x <= cell.x && othercell.x + othercell.width > cell.x && othercell.y === cell.y - cell.height)[0] : null
 			cell.neighboor.bottom = cell.y <= this.rows - 1 ? this.cells.filter(othercell => othercell.x <= cell.x && othercell.x + othercell.width > cell.x && othercell.y === cell.y + cell.height)[0] : null
 			cell.neighboor.left = cell.x >= 1 ? this.cells.filter(othercell => othercell.y <= cell.y && othercell.y + othercell.height > cell.y && othercell.x === cell.x - cell.width)[0] : null
-			cell.neighboor.right = cell.x <= this.cols - 1 ? this.cells.filter(othercell => othercell.y <= cell.y && othercell.y + othercell.height > cell.y && othercell.x === cell.x + cell.width)[0] : null
+			cell.neighboor.right = cell.x <= this.rows - 1 ? this.cells.filter(othercell => othercell.y <= cell.y && othercell.y + othercell.height > cell.y && othercell.x === cell.x + cell.width)[0] : null
 		})
 	}
 
@@ -68,10 +69,15 @@ class Cell {
 		this.width = width
 		this.height = height
 		this.neighboor = {}
+		this.active = false
 	}
 
-	toggleActive(): void {
-		this.active = !this.active
+	toggleActive(bool?: boolean): void {
+		if (bool) {
+			this.active = bool
+		} else {
+			this.active = !this.active
+		}
 	}
 
 }

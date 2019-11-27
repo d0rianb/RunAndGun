@@ -58,9 +58,10 @@ class Map {
 						mask: 0x010011
 					}
 				}
-				new MapElement(this, type, objX, objY, objW, objH, env, options)
+				let mapEl: MapElement = new MapElement(this, type, objX, objY, objW, objH, env, options)
 			}
 		}
+		this.grid.defineNeighboors()
 	}
 }
 

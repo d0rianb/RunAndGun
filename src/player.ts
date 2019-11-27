@@ -6,6 +6,7 @@ import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent, Cooldown } from './events'
 import { Particle, ParticuleGenerator } from './particles'
+import { Sprite, PLAYER_SPRITE } from './texture'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -72,8 +73,9 @@ const ARM_COLLISION_FILTER = 0x0011
 const armOffsetX = 5
 const armHeight = 10
 
+
 /*
-PLAYER BODY
+ENTITY BODY
 ________
 | head | 1/3
 |      |
@@ -82,7 +84,6 @@ ________
 | legs | 1/3
 ________
 */
-
 
 abstract class Entity {
 	id: number
@@ -358,7 +359,7 @@ class Player extends Entity {
 		this.wallSlide = false
 		this.wallSlideSide = 'no-collision'
 
-		this.weapon = new AR(this)
+		this.weapon = new SMG(this)
 		this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
 		this.env.events.push(new DOMEvent('mouseup', () => this.weapon.stopShoot()))
 
@@ -435,7 +436,7 @@ class Player extends Entity {
 	crouch(): void {
 		if (!this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: -this.crouchOffset })
-			Matter.Body.set(this.body, 'friction', FRICTION / 3)
+			Matter.Body.set(this.body, 'airFriction', AIR_FRICTION / 3)
 			this.isCrouch = true
 		}
 	}
@@ -443,7 +444,7 @@ class Player extends Entity {
 	uncrouch(): void {
 		if (this.isCrouch) {
 			Matter.Body.translate(this.playerLegs, { x: 0, y: this.crouchOffset })
-			Matter.Body.set(this.body, 'friction', FRICTION)
+			Matter.Body.set(this.body, 'airFriction', AIR_FRICTION)
 			this.isCrouch = false
 		}
 	}
@@ -492,11 +493,30 @@ class Player extends Entity {
 
 	toRender(): RenderObject[] {
 		let renderObjects = []
-		if (this.body.render.visible) {
-			this.composite.bodies.forEach(body => {
-				body.parts.forEach(part => {
-					switch (part.label) {
-						case 'PlayerRect':
+		this.composite.bodies.forEach(body => {
+			body.parts.forEach(part => {
+				switch (part.label) {
+					case 'PlayerRect':
+						renderObjects.push(new RenderObject(
+							'poly',
+							part.position.x,
+							part.position.y,
+							<RenderOptions>{
+								vertices: part.vertices,
+								texture: PLAYER_SPRITE
+							}
+						))
+						break
+					case 'PlayerCircle':
+						renderObjects.push(new RenderObject(
+							'circle',
+							part.position.x,
+							part.position.y,
+							<RenderOptions>{ radius: (<any>part).circleRadius }
+						))
+						break
+					case 'ComposedBody':
+						part.parts.forEach(insidePart => {
 							renderObjects.push(new RenderObject(
 								'poly',
 								part.position.x,
@@ -505,48 +525,29 @@ class Player extends Entity {
 									vertices: part.vertices
 								}
 							))
-							break
-						case 'PlayerCircle':
-							renderObjects.push(new RenderObject(
-								'circle',
-								part.position.x,
-								part.position.y,
-								<RenderOptions>{ radius: (<any>part).circleRadius }
-							))
-							break
-						case 'ComposedBody':
-							part.parts.forEach(insidePart => {
-								renderObjects.push(new RenderObject(
-									'poly',
-									part.position.x,
-									part.position.y,
-									<RenderOptions>{
-										vertices: part.vertices
-									}
-								))
-							})
-							break
-					}
-				})
+						})
+						break
+				}
 			})
-			this.composite.constraints.forEach(constraint => {
-				renderObjects.push(new RenderObject(
-					'line',
-					constraint.bodyA.position.x + constraint.pointA.x,
-					constraint.bodyA.position.y + constraint.pointA.y,
-					<RenderOptions>{
-						x2: constraint.bodyB.position.x + constraint.pointB.x,
-						y2: constraint.bodyB.position.y + constraint.pointB.y
-					}
-				))
-			})
-		}
+		})
+		this.composite.constraints.forEach(constraint => {
+			renderObjects.push(new RenderObject(
+				'line',
+				constraint.bodyA.position.x + constraint.pointA.x,
+				constraint.bodyA.position.y + constraint.pointA.y,
+				<RenderOptions>{
+					x2: constraint.bodyB.position.x + constraint.pointB.x,
+					y2: constraint.bodyB.position.y + constraint.pointB.y
+				}
+			))
+		})
+
 		let debugText = new RenderObject('text', 10, 20, {
 			content: [
 				`motion: ${this.body.motion.toFixed(3)}`,
 				`speed: ${this.body.speed.toFixed(3)}`,
-				`velocity: {x: ${this.body.velocity.x.toFixed(3)}, y: ${this.body.velocity.y.toFixed(3)}}`,
-				`position: {x: ${this.body.position.x.toFixed(3)}, y: ${this.body.position.y.toFixed(3)}}`,
+				`velocity: {x: ${this.body.velocity.x.toFixed(0)}, y: ${this.body.velocity.y.toFixed(0)}}`,
+				`position: {x: ${this.body.position.x.toFixed(0)}, y: ${this.body.position.y.toFixed(0)}}`,
 				`angle: ${(this.angle * 180 / Math.PI).toFixed(2)}°`,
 				`mass: ${this.body.mass}`,
 				`inertia: ${this.body.inertia}`,
@@ -559,6 +560,7 @@ class Player extends Entity {
 				`friction: ${this.body.friction.toFixed(4)}`,
 				`direction: ${this.dir}`,
 				`camera : ${this.env.camera.x.toFixed(2)}, ${this.env.camera.y.toFixed(2)}`,
+				`number of bodies: ${Matter.Composite.allBodies(this.env.world).length}`
 			],
 			interface: true
 		})
