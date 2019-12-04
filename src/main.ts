@@ -32,7 +32,7 @@ const ctx: CanvasRenderingContext2D = canvas.getContext('2d')
 const map1: Map = new Map(map_file)
 
 let env: Env = new Env(canvas, map1, 'local')
-let player: Player = new Player('Dorian', 300, 200, 40, 88, env, true)
+let player: Player = new Player('Dorian', 300, 200, 50, 80, env, true)
 let enemy1: Enemy = new Enemy('Bad Guy', 200, 200, 40, 88, env)
 let enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env)
 

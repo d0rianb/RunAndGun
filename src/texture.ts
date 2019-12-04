@@ -1,28 +1,47 @@
+// import { Vector } from './object'
+
 // @ts-ignore
 import { default as CENTER } from '../ressources/assets/tiles/CENTER.png'
 // @ts-ignore
-import { default as UP } from '../ressources/assets/tiles/UP.png';
+import { default as UP } from '../ressources/assets/tiles/UP.png'
 // @ts-ignore
-import { default as END } from '../ressources/assets/tiles/END.png';
+import { default as END } from '../ressources/assets/tiles/END.png'
 // @ts-ignore
-import { default as HPIPE } from '../ressources/assets/tiles/H-PIPE.png';
+import { default as HPIPE } from '../ressources/assets/tiles/H-PIPE.png'
 // @ts-ignore
-import { default as PLAYER } from '../ressources/assets/sprite/player.png';
+import { default as PLAYER_BODY } from '../ressources/assets/sprite/player/player_body.png'
+// @ts-ignore
+import { default as PLAYER_HEAD } from '../ressources/assets/sprite/player/player_head.png'
+
+
+class Vector2 {
+	x: number
+	y: number
+
+	constructor(x: number, y: number) {
+		this.x = x
+		this.y = y
+	}
+}
+
+const V_NULL = new Vector2(0, 0)
 
 class Texture {
 	image: HTMLImageElement
 	rotation: number // radians
+	offset: Vector2
 
-	constructor(source: string, rotation: number = 0) {
+	constructor(source: string, rotation: number = 0, offset: Vector2 = V_NULL) {
 		this.image = new Image()
 		this.image.src = source
 		this.rotation = rotation
+		this.offset = offset
 	}
 }
 
 class Sprite extends Texture {
-	constructor(source: string) {
-		super(source, 0)
+	constructor(source: string, offset?: Vector2) {
+		super(source, 0, offset)
 	}
 }
 
@@ -38,7 +57,8 @@ const BOTTOM_END_TEXTURE = new Texture(END, Math.PI)
 const RIGHT_END_TEXTURE = new Texture(END, Math.PI / 2)
 const LEFT_END_TEXTURE = new Texture(END, -Math.PI / 2)
 
-const PLAYER_SPRITE = new Sprite(PLAYER)
+const PLAYER_BODY_SPRITE = new Sprite(PLAYER_BODY)
+const PLAYER_HEAD_SPRITE = new Sprite(PLAYER_HEAD, new Vector2(-7, 0))
 
 let TILE_TEXTURE = {
 	UP: UP_TEXTURE,
@@ -55,4 +75,4 @@ let TILE_TEXTURE = {
 }
 
 
-export { Texture, Sprite, TILE_TEXTURE, PLAYER_SPRITE }
+export { Texture, Sprite, TILE_TEXTURE, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE }

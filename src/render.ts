@@ -17,7 +17,7 @@ interface RenderOptions {
 	interface?: boolean,
 	texture?: Texture,
 	zIndex?: number
-
+	flip?: Vector
 }
 
 
@@ -44,22 +44,50 @@ class RenderObject {
 	}
 
 	renderSprite(ctx: CanvasRenderingContext2D, camera: Camera): void {
-		if (this.type === 'rect' || this.type === 'poly') {
-			if (this.options.texture) {
-				let texture: Texture = this.options.texture
-				console.log(texture)
-				ctx.save()
-				ctx.translate(this.x, this.y)
-				ctx.rotate(this.options.texture.rotation)
-				ctx.drawImage(
-					this.options.texture.image,
-					-this.width / 2,
-					-this.height / 2,
-					this.width,
-					this.height
-				)
-				ctx.restore()
+		if (this.options.texture) {
+			let texture: Texture = this.options.texture
+			ctx.save()
+			ctx.translate(this.x, this.y)
+			ctx.rotate(this.options.texture.rotation)
+			if (this.options.flip) {
+				ctx.scale(this.options.flip.x, this.options.flip.y)
 			}
+
+			// Mask
+			switch (this.type) {
+				case 'poly':
+					const vertices = this.options.vertices
+					ctx.beginPath()
+					ctx.moveTo(vertices[0].x - camera.x, vertices[0].y - camera.y)
+					for (var j = 1; j < vertices.length; j++) {
+						ctx.lineTo(vertices[j].x - camera.x, vertices[j].y - camera.y)
+					}
+					ctx.clip()
+				case 'rect':
+					ctx.drawImage(
+						texture.image,
+						-this.width / 2 + texture.offset.x,
+						-this.height / 2 + texture.offset.y,
+						this.width,
+						this.height
+					)
+					break
+				case 'circle':
+					// ctx.beginPath()
+					// ctx.arc(0, 0, this.options.radius, 0, 2 * Math.PI)
+					// ctx.clip()
+					ctx.drawImage(
+						texture.image,
+						-this.options.radius + texture.offset.x,
+						-this.options.radius + texture.offset.y,
+						2 * this.options.radius,
+						2 * this.options.radius
+					)
+					break
+
+			}
+			ctx.restore()
+
 		}
 	}
 

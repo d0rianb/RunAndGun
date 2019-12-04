@@ -286,7 +286,8 @@ class Env {
 
 		// Player render
 		this.entities.forEach(entity => {
-			let renderObj: RenderObject[] = entity.toRender()
+			// let renderObj: RenderObject[] = entity.toRender()
+			let renderObj: RenderObject[] = entity.toRenderSprite()
 			if (renderObj) {
 				renderObj.forEach(obj => {
 					this.addToRenderingStack(<RenderObject>obj)

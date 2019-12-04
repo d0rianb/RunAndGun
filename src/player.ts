@@ -6,7 +6,7 @@ import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent, Cooldown } from './events'
 import { Particle, ParticuleGenerator } from './particles'
-import { Sprite, PLAYER_SPRITE } from './texture'
+import { Sprite, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE } from './texture'
 import { default as setup } from '../ressources/config/setup.json'
 
 const KEY_MAP = {
@@ -173,7 +173,7 @@ abstract class Entity {
 			restitution: 0.2
 		})
 
-		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width, armHeight, {
+		this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width * 2 / 3, armHeight, {
 			label: 'PlayerRect',
 			inertia: Infinity,
 			sleepThreshold: Infinity,
@@ -267,11 +267,32 @@ abstract class Entity {
 
 	toRender(): RenderObject[] {
 		let renderObjects = []
-		if (this.body.render.visible) {
-			this.composite.bodies.forEach(body => {
-				body.parts.forEach(part => {
-					switch (part.label) {
-						case 'PlayerRect':
+		this.composite.bodies.forEach(body => {
+			body.parts.forEach(part => {
+				switch (part.label) {
+					case 'PlayerRect':
+						renderObjects.push(new RenderObject(
+							'poly',
+							part.position.x,
+							part.position.y,
+							<RenderOptions>{
+								vertices: part.vertices
+							}
+						))
+						break
+					case 'PlayerCircle':
+						renderObjects.push(new RenderObject(
+							'circle',
+							part.position.x,
+							part.position.y,
+							<RenderOptions>{
+								radius: (<any>part).circleRadius,
+								texture: PLAYER_HEAD_SPRITE
+							}
+						))
+						break
+					case 'ComposedBody':
+						part.parts.forEach(insidePart => {
 							renderObjects.push(new RenderObject(
 								'poly',
 								part.position.x,
@@ -280,42 +301,50 @@ abstract class Entity {
 									vertices: part.vertices
 								}
 							))
-							break
-						case 'PlayerCircle':
-							renderObjects.push(new RenderObject(
-								'circle',
-								part.position.x,
-								part.position.y,
-								<RenderOptions>{ radius: (<any>part).circleRadius }
-							))
-							break
-						case 'ComposedBody':
-							part.parts.forEach(insidePart => {
-								renderObjects.push(new RenderObject(
-									'poly',
-									part.position.x,
-									part.position.y,
-									<RenderOptions>{
-										vertices: part.vertices
-									}
-								))
-							})
-							break
-					}
-				})
+						})
+						break
+				}
 			})
-			this.composite.constraints.forEach(constraint => {
-				renderObjects.push(new RenderObject(
-					'line',
-					constraint.bodyA.position.x + constraint.pointA.x,
-					constraint.bodyA.position.y + constraint.pointA.y,
-					<RenderOptions>{
-						x2: constraint.bodyB.position.x + constraint.pointB.x,
-						y2: constraint.bodyB.position.y + constraint.pointB.y
-					}
-				))
-			})
-		}
+		})
+		this.composite.constraints.forEach(constraint => {
+			renderObjects.push(new RenderObject(
+				'line',
+				constraint.bodyA.position.x + constraint.pointA.x,
+				constraint.bodyA.position.y + constraint.pointA.y,
+				<RenderOptions>{
+					x2: constraint.bodyB.position.x + constraint.pointB.x,
+					y2: constraint.bodyB.position.y + constraint.pointB.y
+				}
+			))
+		})
+		return renderObjects
+	}
+
+	toRenderSprite(): RenderObject[] {
+		if (!this.alive) return
+		let renderObjects = []
+		renderObjects.push(new RenderObject(
+			'rect',
+			this.pos.x,
+			this.pos.y + this.width / 3,
+			<RenderOptions>{
+				width: this.width,
+				height: this.height * 2 / 3,
+				texture: PLAYER_BODY_SPRITE,
+				flip: new Vector(this.dir === 'left' ? 1 : -1, 1)
+			}
+		))
+		renderObjects.push(new RenderObject(
+			'circle',
+			this.playerHead.position.x,
+			this.playerHead.position.y,
+			<RenderOptions>{
+				radius: (<any>this.playerHead).circleRadius,
+				texture: PLAYER_HEAD_SPRITE,
+				flip: new Vector(this.dir === 'left' ? 1 : -1, 1)
+
+			}
+		))
 		return renderObjects
 	}
 
@@ -503,7 +532,7 @@ class Player extends Entity {
 							part.position.y,
 							<RenderOptions>{
 								vertices: part.vertices,
-								texture: PLAYER_SPRITE
+								texture: PLAYER_BODY_SPRITE
 							}
 						))
 						break
@@ -512,7 +541,10 @@ class Player extends Entity {
 							'circle',
 							part.position.x,
 							part.position.y,
-							<RenderOptions>{ radius: (<any>part).circleRadius }
+							<RenderOptions>{
+								radius: (<any>part).circleRadius,
+								texture: PLAYER_HEAD_SPRITE
+							}
 						))
 						break
 					case 'ComposedBody':
