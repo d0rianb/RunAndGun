@@ -286,8 +286,7 @@ abstract class Entity {
 							part.position.x,
 							part.position.y,
 							<RenderOptions>{
-								radius: (<any>part).circleRadius,
-								texture: PLAYER_HEAD_SPRITE
+								radius: (<any>part).circleRadius
 							}
 						))
 						break

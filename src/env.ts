@@ -286,7 +286,14 @@ class Env {
 
 		// Player render
 		this.entities.forEach(entity => {
-			// let renderObj: RenderObject[] = entity.toRender()
+			let renderObj: RenderObject[] = entity.toRender()
+			if (renderObj) {
+				renderObj.forEach(obj => {
+					this.addToRenderingStack(<RenderObject>obj)
+				})
+			}
+		})
+		this.entities.forEach(entity => {
 			let renderObj: RenderObject[] = entity.toRenderSprite()
 			if (renderObj) {
 				renderObj.forEach(obj => {
@@ -327,10 +334,13 @@ class Camera {
 		this.safe_zone_size = this.width / 5
 		this.safe_zone = {
 			x1: this.width / 2 - this.safe_zone_size / 2,
-			x2: this.width / 2 + this.safe_zone_size / 2
+			x2: this.width / 2 + this.safe_zone_size / 2,
+			y1: this.height,
+			y2: this.height / 3
+
 		}
 		this.follow_x = true
-		this.follow_y = false
+		this.follow_y = true
 		if (this.env.renderMode == 'matter-js') {
 			(<any>this.env.renderer.bounds).max.x *= this.zoom;
 			(<any>this.env.renderer.bounds).max.y *= this.zoom;
@@ -360,6 +370,13 @@ class Camera {
 				}
 				if (this.env.renderMode == 'matter-js') {
 					Matter.Bounds.translate(this.env.renderer.bounds, <Matter.Vector>{ x: delta, y: 0 })
+				}
+			}
+			if (this.follow_y) {
+				if (focus_y <= this.safe_zone.y2) {
+					let delta: number = 0
+					delta = focus_y - this.y - this.safe_zone.y2
+					this.y += delta
 				}
 			}
 		}
