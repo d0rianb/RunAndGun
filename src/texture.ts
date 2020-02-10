@@ -15,34 +15,34 @@ import { default as PLAYER_HEAD } from '../ressources/assets/sprite/player/playe
 
 
 class Vector2 {
-	x: number
-	y: number
+    x: number
+    y: number
 
-	constructor(x: number, y: number) {
-		this.x = x
-		this.y = y
-	}
+    constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+    }
 }
 
 const V_NULL = new Vector2(0, 0)
 
 class Texture {
-	image: HTMLImageElement
-	rotation: number // radians
-	offset: Vector2
+    image: HTMLImageElement
+    rotation: number // radians
+    offset: Vector2
 
-	constructor(source: string, rotation: number = 0, offset: Vector2 = V_NULL) {
-		this.image = new Image()
-		this.image.src = source
-		this.rotation = rotation
-		this.offset = offset
-	}
+    constructor(source: string, rotation: number = 0, offset: Vector2 = V_NULL) {
+        this.image = new Image()
+        this.image.src = source
+        this.rotation = rotation
+        this.offset = offset
+    }
 }
 
 class Sprite extends Texture {
-	constructor(source: string, offset?: Vector2) {
-		super(source, 0, offset)
-	}
+    constructor(source: string, offset?: Vector2) {
+        super(source, 0, offset)
+    }
 }
 
 const UP_TEXTURE = new Texture(UP)
@@ -61,17 +61,17 @@ const PLAYER_BODY_SPRITE = new Sprite(PLAYER_BODY)
 const PLAYER_HEAD_SPRITE = new Sprite(PLAYER_HEAD, new Vector2(-7, 0))
 
 let TILE_TEXTURE = {
-	UP: UP_TEXTURE,
-	DOWN: DOWN_TEXTURE,
-	LEFT: LEFT_TEXTURE,
-	RIGHT: RIGHT_TEXTURE,
-	MIDDLE: MIDDLE_TEXTURE,
-	HPIPE: HPIPE_TEXTURE,
-	VPIPE: VPIPE_TEXTURE,
-	TOP_END: TOP_END_TEXTURE,
-	BOTTOM_END: BOTTOM_END_TEXTURE,
-	RIGHT_END: RIGHT_END_TEXTURE,
-	LEFT_END: LEFT_END_TEXTURE
+    UP: UP_TEXTURE,
+    DOWN: DOWN_TEXTURE,
+    LEFT: LEFT_TEXTURE,
+    RIGHT: RIGHT_TEXTURE,
+    MIDDLE: MIDDLE_TEXTURE,
+    HPIPE: HPIPE_TEXTURE,
+    VPIPE: VPIPE_TEXTURE,
+    TOP_END: TOP_END_TEXTURE,
+    BOTTOM_END: BOTTOM_END_TEXTURE,
+    RIGHT_END: RIGHT_END_TEXTURE,
+    LEFT_END: LEFT_END_TEXTURE
 }
 
 

@@ -5,16 +5,16 @@ import { Shot } from './weapon'
 import { Cooldown } from './events'
 
 class Rope {
-	bodies: Array<Matter.Body>
+    bodies: Array<Matter.Body>
 }
 
 class Grappeln {
-	player: Player
-	env: Env
+    player: Player
+    env: Env
 
-	constructor() {
+    constructor() {
 
-	}
+    }
 }
 
 export { Grappeln }

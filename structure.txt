@@ -29,17 +29,17 @@ app :
     - start & restart a game
 }
 
-Physic : 
+Physic :
     - Matter.js
 
 Rendering :
     - Stack process
     - Not Matter.js one
-    - Hard-coded with canvas stuff 
+    - Hard-coded with canvas stuff
     - Sprites
 
-Interface : 
-    - Simple but detailed 
+Interface :
+    - Simple but detailed
     - Life / ammo / weapon active
 
 Settings :
@@ -48,22 +48,20 @@ Settings :
 Audio :
     - Background music
 
-Graphisme : 
+Graphisme :
     - simple
     - Mario-like
     - animated-sprite
 
-Network : 
+Network :
     - socket.io
 
-Gun part : 
+Gun part :
     - multiple class ?
-    - Weapon switch 
+    - Weapon switch
     - not too much spam
 
-Camera : 
-    - movable ? 
+Camera :
+    - movable ?
     - safe-zone
     - zoom ?
-
-

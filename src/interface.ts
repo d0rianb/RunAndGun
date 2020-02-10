@@ -7,27 +7,27 @@ import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 
 class Interface {
-	player: Player
-	env: Env
-	objects: InterfaceObject[]
+    player: Player
+    env: Env
+    objects: InterfaceObject[]
 
-	font: string
+    font: string
 
-	constructor(player: Player, env: Env) {
-		this.player = player
-		this.env = env
-		this.objects = []
-	}
+    constructor(player: Player, env: Env) {
+        this.player = player
+        this.env = env
+        this.objects = []
+    }
 
-	render(): void {
+    render(): void {
 
-	}
+    }
 }
 
 class InterfaceObject {
-	name: string
-	position: Vector
-	size: SizeObject
+    name: string
+    position: Vector
+    size: SizeObject
 
 }
 

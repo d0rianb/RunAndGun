@@ -1,14 +1,14 @@
 {
-	"name": "Map 1",
-	"dimensions": {
-		"width": "100",
-		"height": "25"
-	},
-	"grid": {
-		"width": "36",
-		"height": "18"
-	},
-	"objects": [
+    "name": "Map 1",
+    "dimensions": {
+        "width": "100",
+        "height": "25"
+    },
+    "grid": {
+        "width": "36",
+        "height": "18"
+    },
+    "objects": [
     "format type       x     y     w     h    inertie    name",
             "rect      0    17    90    2     static     floor",
             "rect      2    10     2    1     static     plateform-1",
