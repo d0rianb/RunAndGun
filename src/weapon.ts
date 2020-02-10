@@ -1,7 +1,12 @@
 import * as Matter from 'matter-js'
+
 import { Env } from './env'
 import { Player } from './player'
 import { Cooldown } from './events'
+
+import { default as constants } from '../ressources/static/constants.json5'
+
+const SHOT_COLLISION_FILTER = constants.physics.collision.collisionFilter.body
 
 const shotIDPrefix = 1000
 var lastID: number = 0
@@ -45,16 +50,17 @@ class Weapon {
         this.autofire = false
     }
 
-    shoot(auto: boolean = false): void {
+    shoot(auto: boolean = false): Shot {
         if (this.isReloading || !this.canShoot) return
         if (auto && !this.autofire) return
         if (this.nbAmmo == 0) {
-            return this.reload()
+            this.reload()
+            return null
         }
         let { x, y } = this.player.playerArm.vertices[2]
         this.recoil = this.shootDamage * this.nbShoot / 175
         Matter.Body.applyForce(this.player.body, this.player.pos, <Matter.Vector>{ x: -this.recoil * Math.cos(this.player.angle), y: -this.recoil * Math.sin(this.player.angle) })
-        new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
+        const shot = new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
         this.nbAmmo -= 1
         this.canShoot = false
         let shotCooldown: Cooldown = new Cooldown(1000 / this.fireRate, () => {
@@ -66,6 +72,7 @@ class Weapon {
         if (this.autofire) {
             new Cooldown(1000 / this.fireRate, () => this.shoot(true))
         }
+        return shot
     }
 
     stopShoot(): void {
@@ -115,8 +122,13 @@ class Shot {
         this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs / 3, 6, {
             label: 'Shot',
             id: this.id,
-            friction: 0.95,
-            angle: this.dir
+            friction: 0,
+            angle: this.dir,
+            collisionFilter: {
+                group: 2,
+                category: SHOT_COLLISION_FILTER,
+                mask: 0x010000
+            }
         })
         Matter.Body.setInertia(this.body, Infinity)
         this.env.addShot(this)
@@ -126,6 +138,7 @@ class Shot {
         let timescale: number = this.env.timescale
         const speed: number = this.speed * timescale
         Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
+        // Matter.Body.applyForce(this.body, this.body.position, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
         this.x = this.body.position.x
         this.y = this.body.position.y
         if (this.x > this.env.mapWidth

@@ -50,7 +50,7 @@ class RenderObject {
             ctx.translate(this.x, this.y)
             ctx.rotate(this.options.texture.rotation)
             if (this.options.flip) {
-                ctx.scale(this.options.flip.x, this.options.flip.y)
+                ctx.scale(this.options.flip.x * texture.scale.x, this.options.flip.y * texture.scale.y)
             }
 
             // Mask

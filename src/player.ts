@@ -1,5 +1,6 @@
 import * as Matter from 'matter-js'
 import * as kd from 'keydrown'
+
 import { Vector } from './object'
 import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
@@ -7,7 +8,9 @@ import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent, Cooldown } from './events'
 import { Particle, ParticuleGenerator } from './particles'
 import { Sprite, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE } from './texture'
+
 import { default as setup } from '../ressources/config/setup.json'
+import { default as constants } from '../ressources/static/constants.json5'
 
 const KEY_MAP = {
     'ZERO': kd.ZERO,
@@ -67,8 +70,8 @@ const FRICTION = 0.01
 const STATIC_FRICTION = 0.25
 const AIR_FRICTION = 0.01
 
-const BODY_COLLISION_FILTER = 0x0010
-const ARM_COLLISION_FILTER = 0x0011
+const BODY_COLLISION_FILTER = parseInt(constants.physics.collision.collisionFilter.body, 16)
+const ARM_COLLISION_FILTER = parseInt(constants.physics.collision.collisionFilter.arm, 16)
 
 const armOffsetX = 5
 const armHeight = 10
@@ -387,7 +390,7 @@ class Player extends Entity {
         this.wallSlide = false
         this.wallSlideSide = 'no-collision'
 
-        this.weapon = new SMG(this)
+        this.weapon = new AR(this)
         this.env.events.push(new DOMEvent('mousedown', () => this.weapon.shoot()))
         this.env.events.push(new DOMEvent('mouseup', () => this.weapon.stopShoot()))
 

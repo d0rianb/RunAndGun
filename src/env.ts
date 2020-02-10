@@ -1,5 +1,6 @@
 import * as Matter from 'matter-js'
 import * as main from './main'
+
 import { Vector, MapElement, ObjectRenderOptions } from './object'
 import { Entity, Player } from './player'
 import { Map, SizeObject } from './map'
@@ -7,10 +8,14 @@ import { DOMEvent } from './events'
 import { Shot } from './weapon'
 import { Particle } from './particles'
 import { Interface } from './interface'
+import { BULLET_SPRITE } from './texture'
 import { Renderer, RenderObject, RenderOptions } from './render'
-import { default as colors } from '../ressources/config/colors.json'
 
-const WALL_COLLISION_FILTER = 0x0010
+import { default as colors } from '../ressources/config/colors.json'
+import { default as constants } from '../ressources/static/constants.json5'
+
+
+const WALL_COLLISION_FILTER = constants.physics.collision.collisionFilter.body
 const GRAVITY_SCALE = 0.00195
 
 let debug = main.DEBUG
@@ -120,9 +125,9 @@ class Env {
     }
 
     initMatterEngine(): void {
-        this.world.gravity.scale = 0 //0.0019
+        this.world.gravity.scale = 0 // default: 0.0019
         Matter.Events.on(this.engine, 'beforeUpdate', e => {
-            // Own gravity
+            // Apply gravity
             const bodies = Matter.Composite.allBodies(this.engine.world)
             bodies.forEach(body => {
                 if (!(body.isStatic || body.isSleeping) && body.label !== 'Shot') {
@@ -200,6 +205,7 @@ class Env {
             return false
         }
         const entity: Entity = this.entities.filter(entity => entity.idArray.includes(entityBody.id))[0]
+        console.log(`collide with ${entity.name}`)
         if (entity && shot) {
             entity.hitBy(shot, entityBody)
         }
@@ -240,6 +246,7 @@ class Env {
     }
 
     update(): void {
+        // Before Update is handle by th e`initMatterEngine` method
         Matter.Runner.tick(this.engineRunner, this.engine, 1 / this.framerate)
         this.objects.forEach(obj => obj.update())
         this.shots.forEach(shot => shot.update())
@@ -278,7 +285,8 @@ class Env {
         // Shot render
         this.shots.forEach(shot => {
             const pos: Matter.Vector = shot.body.position
-            let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices })
+            // let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices })
+            let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices, texture: BULLET_SPRITE })
             this.addToRenderingStack(renderObj)
         })
 

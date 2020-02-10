@@ -58,6 +58,11 @@ let config = {
             {
                 test: /\.txt$/i,
                 use: 'raw-loader',
+            },
+            {
+                test: /\.json5$/,
+                use: 'json5-loader',
+                type: 'javascript/auto'
             }
         ]
     },

@@ -1,0 +1,16 @@
+{
+    "physics": {
+        "collision": {
+            "collisionFilter": {
+                "body": 0x0010,
+                "arm": 0x0011,
+                "wall": 0x0010
+            },
+            "collisionMask": {
+                "body": 1
+            }
+
+        }
+
+    }
+}
