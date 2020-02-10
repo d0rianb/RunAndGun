@@ -1,9 +1,12 @@
 import path from 'path'
+
 import { Env } from './env'
 import { MapElement, ObjectOptions } from './object'
 import { Grid, Cell } from './grid'
 
-const WALL_COLLISION_FILTER = 0x0010
+import { default as constants } from '../ressources/static/constants.json5'
+
+const COLLISION = constants.physics.collision
 
 interface JSONSizeObject {
     width: string,
@@ -53,9 +56,9 @@ class Map {
                     isStatic: objOptions.includes('static'),
                     frictionStatic: 0.1,
                     collisionFilter: {
-                        group: 0,
-                        category: WALL_COLLISION_FILTER,
-                        mask: 0x010011
+                        group: COLLISION.collisionGroup.wall,
+                        category: COLLISION.collisionCategory.wall,
+                        mask: COLLISION.collisionMask.wall
                     }
                 }
                 let mapEl: MapElement = new MapElement(this, type, objX, objY, objW, objH, env, options)

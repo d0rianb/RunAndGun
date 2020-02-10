@@ -14,9 +14,7 @@ import { Renderer, RenderObject, RenderOptions } from './render'
 import { default as colors } from '../ressources/config/colors.json'
 import { default as constants } from '../ressources/static/constants.json5'
 
-
-const WALL_COLLISION_FILTER = constants.physics.collision.collisionFilter.body
-const GRAVITY_SCALE = 0.00195
+const GRAVITY_SCALE = constants.physics.gravity.scale
 
 let debug = main.DEBUG
 
@@ -142,6 +140,7 @@ class Env {
                     const shotBody = shot.bodyA.label === 'Shot' ? shot.bodyA : shot.bodyB
                     const otherBody = shotBody === shot.bodyA ? shot.bodyB : shot.bodyA
                     if (otherBody.label === 'Wall') {
+                        console.log('collide with wall')
                         const shotObj = this.shots.filter(shot => shot.id === shotBody.id)[0]
                         if (shotObj) shotObj.destroy()
                     } else if (otherBody.label == 'PlayerRect' || otherBody.label == 'PlayerCircle' ) {

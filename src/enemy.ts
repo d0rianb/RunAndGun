@@ -5,12 +5,17 @@ import { Env } from './env'
 import { RenderObject, RenderOptions } from './render'
 import { Weapon, AR, SMG, Shot } from './weapon'
 
+import { default as constants } from '../ressources/static/constants.json5'
+
 const MAX_SPEED = 12
 const SECOND_JUMP_COEFF = 0.8
 
 const FRICTION = 0.01
 const STATIC_FRICTION = 0.25
 const AIR_FRICTION = 0.01
+
+
+const COLLISION = constants.physics.collision
 
 const BODY_COLLISION_FILTER = 0x0010
 const ARM_COLLISION_FILTER = 0x0011
@@ -50,14 +55,14 @@ class Enemy extends Entity {
             restitution: 0.2
         })
 
-        this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width, armHeight, {
+        this.playerArm = Matter.Bodies.rectangle(this.pos.x + this.width - armOffsetX, this.playerBody.position.y, this.width * 2 / 3, armHeight, {
             label: 'PlayerRect',
             inertia: Infinity,
             sleepThreshold: Infinity,
             collisionFilter: {
-                group: 1,
-                category: ARM_COLLISION_FILTER,
-                mask: 0x010001
+                group: COLLISION.collisionGroup.arm,
+                category: COLLISION.collisionCategory.arm,
+                mask: COLLISION.collisionMask.arm
             }
         })
 
@@ -73,9 +78,9 @@ class Enemy extends Entity {
             restitution: 0.14,
             sleepThreshold: Infinity,
             collisionFilter: {
-                group: 0,
-                category: BODY_COLLISION_FILTER,
-                mask: 0x010011
+                group: COLLISION.collisionGroup.body,
+                category: COLLISION.collisionCategory.body,
+                mask: COLLISION.collisionMask.body
             }
         })
 

@@ -6,7 +6,7 @@ import { Cooldown } from './events'
 
 import { default as constants } from '../ressources/static/constants.json5'
 
-const SHOT_COLLISION_FILTER = constants.physics.collision.collisionFilter.body
+const COLLISION = constants.physics.collision
 
 const shotIDPrefix = 1000
 var lastID: number = 0
@@ -125,9 +125,9 @@ class Shot {
             friction: 0,
             angle: this.dir,
             collisionFilter: {
-                group: 2,
-                category: SHOT_COLLISION_FILTER,
-                mask: 0x010000
+                group: COLLISION.collisionGroup.shot,
+                category: COLLISION.collisionCategory.shot,
+                mask: COLLISION.collisionMask.shot
             }
         })
         Matter.Body.setInertia(this.body, Infinity)

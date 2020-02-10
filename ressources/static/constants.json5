@@ -1,16 +1,28 @@
 {
     "physics": {
         "collision": {
-            "collisionFilter": {
+            "collisionCategory": {
                 "body": 0x0010,
                 "arm": 0x0011,
-                "wall": 0x0010
+                "shot": 0x0010,
+                "wall": 0x0011
+            },
+            "collisionGroup": {
+                "body": 1,
+                "arm": 2,
+                "shot": 1,
+                "wall": 1
             },
             "collisionMask": {
-                "body": 1
+                "body": 0x010001,
+                "arm": 0x010001,
+                "wall": 0x010001,
+                "shot": 0x010001
             }
 
+        },
+        "gravity": {
+            "scale": 0.00195
         }
-
     }
 }

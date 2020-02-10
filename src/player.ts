@@ -70,8 +70,7 @@ const FRICTION = 0.01
 const STATIC_FRICTION = 0.25
 const AIR_FRICTION = 0.01
 
-const BODY_COLLISION_FILTER = parseInt(constants.physics.collision.collisionFilter.body, 16)
-const ARM_COLLISION_FILTER = parseInt(constants.physics.collision.collisionFilter.arm, 16)
+const COLLISION = constants.physics.collision
 
 const armOffsetX = 5
 const armHeight = 10
@@ -181,9 +180,9 @@ abstract class Entity {
             inertia: Infinity,
             sleepThreshold: Infinity,
             collisionFilter: {
-                group: 1,
-                category: ARM_COLLISION_FILTER,
-                mask: 0x010001
+                group: COLLISION.collisionGroup.arm,
+                category: COLLISION.collisionCategory.arm,
+                mask: COLLISION.collisionMask.arm
             }
         })
 
@@ -199,9 +198,9 @@ abstract class Entity {
             restitution: 0.14,
             sleepThreshold: Infinity,
             collisionFilter: {
-                group: 0,
-                category: BODY_COLLISION_FILTER,
-                mask: 0x010011
+                group: COLLISION.collisionGroup.body,
+                category: COLLISION.collisionCategory.body,
+                mask: COLLISION.collisionMask.body
             }
         })
 
