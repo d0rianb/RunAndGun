@@ -22,7 +22,7 @@ import { Map } from './map'
 import { Player } from './player'
 import { Enemy } from './enemy'
 
-import { default as map_file } from '../ressources/static/map/map1.json'
+import { default as map_file } from '../ressources/static/map/map_test.json'
 
 const DEBUG: boolean = false
 

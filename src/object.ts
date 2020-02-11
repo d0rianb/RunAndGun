@@ -122,14 +122,29 @@ class Tile extends Cell {
             case 'DOWN-RIGHT-LEFT':
                 this.texture = TILE_TEXTURE.BOTTOM_END
                 break
+            case 'UP-DOWN-RIGHT-LEFT':
+                this.texture = TILE_TEXTURE.CUBE
+                break
+            case 'UP-LEFT':
+                this.texture = TILE_TEXTURE.UP_LEFT
+                break
+            case 'UP-RIGHT':
+                this.texture = TILE_TEXTURE.UP_RIGHT
+                break
+            case 'DOWN-LEFT':
+                this.texture = TILE_TEXTURE.DOWN_LEFT
+                break
+            case 'DOWN-RIGHT':
+                this.texture = TILE_TEXTURE.DOWN_RIGHT
+                break
 			/* MISS :
 				UP-DOWN-RIGHT-LEFT
 				CORNERS
 			*/
         }
-        // if (!this.texture) {
-        // 	console.log(this.side)
-        // }
+        if (!this.texture) {
+            console.log(this.side)
+        }
     }
 
 }

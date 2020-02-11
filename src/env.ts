@@ -140,7 +140,6 @@ class Env {
                     const shotBody = shot.bodyA.label === 'Shot' ? shot.bodyA : shot.bodyB
                     const otherBody = shotBody === shot.bodyA ? shot.bodyB : shot.bodyA
                     if (otherBody.label === 'Wall') {
-                        console.log('collide with wall')
                         const shotObj = this.shots.filter(shot => shot.id === shotBody.id)[0]
                         if (shotObj) shotObj.destroy()
                     } else if (otherBody.label == 'PlayerRect' || otherBody.label == 'PlayerCircle' ) {
@@ -204,7 +203,6 @@ class Env {
             return false
         }
         const entity: Entity = this.entities.filter(entity => entity.idArray.includes(entityBody.id))[0]
-        console.log(`collide with ${entity.name}`)
         if (entity && shot) {
             entity.hitBy(shot, entityBody)
         }
