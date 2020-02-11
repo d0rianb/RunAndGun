@@ -5,4 +5,4 @@ prototype/
 dist/
 src/ngon_*
 
-ressources/**/*[.png, .jpg, .jpeg, .psd]
+ressources/**/*[ .psd]
