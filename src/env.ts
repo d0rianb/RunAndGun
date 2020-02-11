@@ -11,7 +11,7 @@ import { Interface } from './interface'
 import { BULLET_SPRITE } from './texture'
 import { Renderer, RenderObject, RenderOptions } from './render'
 
-import { default as colors } from '../ressources/config/colors.json'
+import { default as colors } from '../ressources/static/config/colors.json'
 import { default as constants } from '../ressources/static/constants.json5'
 
 const GRAVITY_SCALE = constants.physics.gravity.scale

@@ -1,35 +1,37 @@
 {
-	"name": "RunAndGun",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"scss": "sass --watch src/style/main.scss dist/main.css",
-		"dev": "NODE_ENV=dev webpack-dev-server --mode=development",
-		"build": "webpack --mode=production",
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"dependencies": {
-		"file-loader": "^4.2.0",
-		"json5": "^2.1.1",
-		"keydrown": "^1.2.7",
-		"matter-js": "^0.14.2",
-		"typescript": "^3.5.3",
-		"url-loader": "^2.2.0"
-	},
-	"devDependencies": {
-		"@types/matter-js": "^0.10.2",
-		"@types/node": "^12.7.2",
-		"@types/plotly.js": "^1.44.17",
-		"json-loader": "^0.5.7",
-		"json5-loader": "^3.0.0",
-		"raw-loader": "^3.1.0",
-		"ts-loader": "^6.0.4",
-		"webpack": "^4.39.2",
-		"webpack-cli": "^3.3.7",
-		"webpack-dev-server": "^3.8.0"
-	},
-	"keywords": [],
-	"author": "Dorian <dorian.beauchesne@icloud.com>",
-	"license": "ISC"
+  "name": "RunAndGun",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "scss": "sass --watch src/style/main.scss dist/main.css",
+    "dev": "NODE_ENV=dev webpack-dev-server --mode=development",
+    "build": "webpack --mode=production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "file-loader": "^4.2.0",
+    "json5": "^2.1.1",
+    "keydrown": "^1.2.7",
+    "matter-js": "^0.14.2",
+    "module-alias": "^2.2.2",
+    "typescript": "^3.5.3",
+    "url-loader": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/matter-js": "^0.10.2",
+    "@types/node": "^12.7.2",
+    "@types/plotly.js": "^1.44.17",
+    "enhanced-resolve": "^4.1.1",
+    "json-loader": "^0.5.7",
+    "json5-loader": "^3.0.0",
+    "raw-loader": "^3.1.0",
+    "ts-loader": "^6.0.4",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "keywords": [],
+  "author": "Dorian <dorian.beauchesne@icloud.com>",
+  "license": "ISC"
 }

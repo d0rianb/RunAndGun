@@ -68,6 +68,6 @@ let config = {
     },
     target: 'web',
     plugins: []
-};
+}
 
 module.exports = config

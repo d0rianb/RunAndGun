@@ -9,7 +9,7 @@ import { DOMEvent, Cooldown } from './events'
 import { Particle, ParticuleGenerator } from './particles'
 import { Sprite, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE } from './texture'
 
-import { default as setup } from '../ressources/config/setup.json'
+import { default as setup } from '../ressources/static/config/setup.json'
 import { default as constants } from '../ressources/static/constants.json5'
 
 const KEY_MAP = {

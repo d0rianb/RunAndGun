@@ -4,7 +4,7 @@ import { Player } from './player'
 import { Vector } from './object'
 import { SizeObject } from './map'
 import { Renderer, RenderObject, RenderOptions } from './render'
-import { default as colors } from '../ressources/config/colors.json'
+import { default as colors } from '../ressources/static/config/colors.json'
 
 class Interface {
     player: Player
