@@ -4,5 +4,3 @@ node_modules/
 prototype/
 dist/
 src/ngon_*
-
-ressources/**/*[ .psd]
