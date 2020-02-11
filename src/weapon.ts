@@ -163,7 +163,7 @@ class AR extends Weapon {
         this.fireRate = 5
         this.spread = Math.PI / 20
         this.nbShoot = 1
-        this.shootSpeed = 1 //30
+        this.shootSpeed = 30
         this.shootDamage = 20
         this.maxAmmo = 10
         this.ammoSize = 2
