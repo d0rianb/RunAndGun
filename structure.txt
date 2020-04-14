@@ -65,3 +65,11 @@ Camera :
     - movable ?
     - safe-zone
     - zoom ?
+
+Canvas Layer for optimization : 
+    - post-processing
+    - Effect (particules, explosions, ...)
+    - Shots
+    - Players
+    - Env (Maps, objects)
+    - Background

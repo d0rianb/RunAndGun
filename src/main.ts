@@ -17,6 +17,7 @@
 import * as Matter from 'matter-js'
 import JSON5 from 'json5'
 
+import { Layer } from './layer'
 import { Env } from './env'
 import { Map } from './map'
 import { Player } from './player'
@@ -27,12 +28,13 @@ import { default as map_file } from '../ressources/static/map/map1.json'
 const DEBUG: boolean = false
 
 const main: HTMLElement = document.querySelector('main')
-const canvas: HTMLCanvasElement = document.createElement('canvas')
-const ctx: CanvasRenderingContext2D = canvas.getContext('2d')
+
+const layersString: Array<string> = Array.from(main.children).map(el => el.id)
+const layersArray: Array<Layer> = layersString.map((name, i) => new Layer(name, i))
 
 const map1: Map = new Map(map_file)
 
-let env: Env = new Env(canvas, map1, 'local')
+let env: Env = new Env(layersArray, map1, 'local')
 let player: Player = new Player('Dorian', 300, 200, 50, 80, env, true)
 let enemy1: Enemy = new Enemy('Bad Guy', 200, 200, 40, 88, env)
 let enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env);
@@ -44,7 +46,7 @@ let enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env);
 
 window.onload = () => {
     env.update();
-    canvas.focus()
+    main.focus()
 }
 
 export { DEBUG }

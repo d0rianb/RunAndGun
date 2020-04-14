@@ -11,7 +11,7 @@ const COLLISION = constants.physics.collision
 const shotIDPrefix = 1000
 var lastID: number = 0
 
-class Weapon {
+abstract class Weapon {
     public player: Player
     public name: string
 

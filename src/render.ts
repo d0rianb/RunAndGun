@@ -1,4 +1,5 @@
 import { Vector } from './object'
+import { Layer } from './layer'
 import { Camera } from './env'
 import { Texture } from './texture'
 
@@ -25,14 +26,16 @@ class RenderObject {
     type: string
     x: number
     y: number
+    layerName: string
     options: RenderOptions
     width?: number
     height?: number
 
-    constructor(type: string, x: number, y: number, options: RenderOptions) {
+    constructor(type: string, x: number, y: number, layerName: string, options: RenderOptions) {
         this.type = type
         this.x = x
         this.y = y
+        this.layerName = layerName
         this.options = options
 
         switch (this.type) {
@@ -169,25 +172,29 @@ class RenderObject {
 }
 
 class Renderer {
-
-    static render(renderStack: Array<RenderObject>, ctx: CanvasRenderingContext2D, camera: Camera) {
-        renderStack.sort((obj1, obj2) => {
-            return obj1.options.zIndex - obj2.options.zIndex
-        })
+    static render(renderStack: Array<RenderObject>, layers: Array<Layer>, camera: Camera) {
+        // renderStack.sort((obj1, obj2) => {
+        //     return obj1.options.zIndex - obj2.options.zIndex
+        // })
 
         renderStack.forEach(object => {
+            const layer: Layer = layers.find(layer => layer.name === object.layerName)
+            const ctx: CanvasRenderingContext2D = layer.ctx
             object.render(ctx, camera, true)
 
         })
     }
 
-    static renderSprite(renderStack: Array<RenderObject>, ctx: CanvasRenderingContext2D, camera: Camera) {
-        renderStack.sort((obj1, obj2) => {
-            return obj1.options.zIndex - obj2.options.zIndex
-        })
+    static renderSprite(renderStack: Array<RenderObject>, layers: Array<Layer>, camera: Camera) {
+        // renderStack.sort((obj1, obj2) => {
+        //     return obj1.options.zIndex - obj2.options.zIndex
+        // })
 
         renderStack.forEach(object => {
+            const layer: Layer = layers.find(layer => layer.name === object.layerName)
+            const ctx: CanvasRenderingContext2D = layer.ctx
             object.renderSprite(ctx, camera)
+
         })
     }
 }

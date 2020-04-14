@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
+    "paths": {
+      "@static": ["ressources/static"],
+      "@config": ["ressources/static/config"],
+      "@map": ["ressources/static/map"]
+    },
     "outDir": "dist/",
     "module": "commonjs",
     "moduleResolution": "node",

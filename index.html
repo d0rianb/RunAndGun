@@ -2,15 +2,23 @@
 <html lang="fr" dir="ltr">
 
 <head>
-    <meta charset="utf-8">
-    <title>Run and Gun</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style src="./dist/main.css"></style>
+  <meta charset="utf-8">
+  <title>Run and Gun</title>
+  <link rel="stylesheet" href="./dist/main.css">
 </head>
 
-<body style="margin: 0; overflow: hidden">
-    <main></main>
-    <script src="./dist/main.bundle.js" charset="utf-8"></script>
+<body>
+  <main>
+    <canvas id="debug"></canvas>
+    <canvas id="interface"></canvas>
+    <canvas id="postProcess"></canvas>
+    <canvas id="effects"></canvas>
+    <canvas id="shots"></canvas>
+    <canvas id="players"></canvas>
+    <canvas id="env"></canvas>
+    <canvas id="background"></canvas>
+  </main>
+  <script src="./dist/main.bundle.js" charset="utf-8"></script>
 </body>
 
 </html>

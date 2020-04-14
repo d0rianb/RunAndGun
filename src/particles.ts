@@ -35,7 +35,7 @@ class Particle {
     }
 
     render(env: Env): void {
-        let renderObject: RenderObject = new RenderObject('circle', this.pos.x, this.pos.y, <RenderOptions>{ radius: this.radius })
+        let renderObject: RenderObject = new RenderObject('circle', this.pos.x, this.pos.y, 'effects', <RenderOptions>{ radius: this.radius })
         env.addToRenderingStack(renderObject)
     }
 }

@@ -277,6 +277,7 @@ abstract class Entity {
                             'poly',
                             part.position.x,
                             part.position.y,
+                            'players',
                             <RenderOptions>{
                                 vertices: part.vertices
                             }
@@ -287,6 +288,7 @@ abstract class Entity {
                             'circle',
                             part.position.x,
                             part.position.y,
+                            'players',
                             <RenderOptions>{
                                 radius: (<any>part).circleRadius
                             }
@@ -298,6 +300,7 @@ abstract class Entity {
                                 'poly',
                                 part.position.x,
                                 part.position.y,
+                                'players',
                                 <RenderOptions>{
                                     vertices: part.vertices
                                 }
@@ -312,6 +315,7 @@ abstract class Entity {
                 'line',
                 constraint.bodyA.position.x + constraint.pointA.x,
                 constraint.bodyA.position.y + constraint.pointA.y,
+                'players',
                 <RenderOptions>{
                     x2: constraint.bodyB.position.x + constraint.pointB.x,
                     y2: constraint.bodyB.position.y + constraint.pointB.y
@@ -328,6 +332,7 @@ abstract class Entity {
             'rect',
             this.pos.x,
             this.pos.y + this.width / 3,
+            'players',
             <RenderOptions>{
                 width: this.width,
                 height: this.height * 2 / 3,
@@ -339,6 +344,7 @@ abstract class Entity {
             'circle',
             this.playerHead.position.x,
             this.playerHead.position.y,
+            'players',
             <RenderOptions>{
                 radius: (<any>this.playerHead).circleRadius,
                 texture: PLAYER_HEAD_SPRITE,
@@ -531,6 +537,7 @@ class Player extends Entity {
                             'poly',
                             part.position.x,
                             part.position.y,
+                            'players',
                             <RenderOptions>{
                                 vertices: part.vertices,
                                 texture: PLAYER_BODY_SPRITE
@@ -542,6 +549,7 @@ class Player extends Entity {
                             'circle',
                             part.position.x,
                             part.position.y,
+                            'players',
                             <RenderOptions>{
                                 radius: (<any>part).circleRadius,
                                 texture: PLAYER_HEAD_SPRITE
@@ -554,6 +562,7 @@ class Player extends Entity {
                                 'poly',
                                 part.position.x,
                                 part.position.y,
+                                'players',
                                 <RenderOptions>{
                                     vertices: part.vertices
                                 }
@@ -568,6 +577,7 @@ class Player extends Entity {
                 'line',
                 constraint.bodyA.position.x + constraint.pointA.x,
                 constraint.bodyA.position.y + constraint.pointA.y,
+                'players',
                 <RenderOptions>{
                     x2: constraint.bodyB.position.x + constraint.pointB.x,
                     y2: constraint.bodyB.position.y + constraint.pointB.y
@@ -575,7 +585,7 @@ class Player extends Entity {
             ))
         })
 
-        let debugText = new RenderObject('text', 10, 20, {
+        let debugText = new RenderObject('text', 10, 20, 'interface', {
             content: [
                 `motion: ${this.body.motion.toFixed(3)}`,
                 `speed: ${this.body.speed.toFixed(3)}`,
@@ -643,6 +653,7 @@ class Player extends Entity {
         if (this.wallSlide && this.body.friction == 0) {
             console.log('FrictionError')
         }
+
         this.pos = new Vector(this.body.position.x, this.body.position.y)
         this.checkDeath()
     }

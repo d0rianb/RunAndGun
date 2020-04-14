@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const webpack = require('webpack')
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const dev = process.env.NODE_ENV === "dev"
 
@@ -19,7 +20,12 @@ let config = {
     },
     watch: dev,
     resolve: {
-        extensions: ['.ts', '.js', '.json']
+        alias: {
+            '@static': path.resolve(__dirname, 'ressources/static'),
+            '@config': path.resolve(__dirname, 'ressources/static/config'),
+            '@map': path.resolve(__dirname, 'ressources/static/map')
+        },
+        extensions: ['.ts', '.js', '.json', 'scss']
     },
     module: {
         rules: [{

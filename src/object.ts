@@ -176,7 +176,7 @@ class MapElement {
 
         switch (this.type) {
             case 'rect':
-                this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options));
+                this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
                 for (let i = 0; i < gridWidth; i++) {
                     for (let j = 0; j < gridHeight; j++) {
                         let gridCell = this.map.grid.getCell(gridX + i, gridY + j)
@@ -204,6 +204,7 @@ class MapElement {
                 'rect',
                 (tile.x + tile.width / 2) * this.env.relToAbs,
                 (tile.y + tile.height / 2) * this.env.relToAbs,
+                'env',
                 <RenderOptions>{
                     width: tile.width * this.env.relToAbs,
                     height: tile.height * this.env.relToAbs,
@@ -221,6 +222,7 @@ class MapElement {
                     'poly',
                     this.body.position.x,
                     this.body.position.y,
+                    'env',
                     <RenderOptions>{
                         vertices: this.body.vertices,
                         zIndex: this.isStatic ? 2 : 1
@@ -232,6 +234,7 @@ class MapElement {
                     'circle',
                     this.body.position.x,
                     this.body.position.y,
+                    'env',
                     <RenderOptions>{ radius: (<any>this.body).circleRadius }
                 )
                 break

@@ -2,6 +2,7 @@ import * as Matter from 'matter-js'
 import * as main from './main'
 
 import { Vector, MapElement, ObjectRenderOptions } from './object'
+import { Layer } from './layer'
 import { Entity, Player } from './player'
 import { Map, SizeObject } from './map'
 import { DOMEvent } from './events'
@@ -44,10 +45,10 @@ const renderOption: object = {
 }
 
 class Env {
-    public canvas: HTMLCanvasElement
+    public layers: Array<Layer>
     private ctx: CanvasRenderingContext2D
-    public width: number = 0 // px
-    public height: number = 0 // px
+    public width: number // px
+    public height: number // px
     public gridWidth: number // grid unit
     public gridHeight: number // grid unit
     public mapWidth: number
@@ -73,9 +74,8 @@ class Env {
     private renderingStack: Array<RenderObject>
     public renderMode: string // local | matter-js
 
-    constructor(canvas: HTMLCanvasElement, map: Map, renderMode: string = 'local') {
-        this.canvas = canvas
-        this.ctx = canvas.getContext('2d')
+    constructor(layersArray: Array<Layer>, map: Map, renderMode: string = 'local') {
+        this.layers = layersArray
         this.map = map
         this.gridWidth = map.tileWidth
         this.gridHeight = map.tileWidth
@@ -86,6 +86,8 @@ class Env {
         this.world = this.engine.world
         this.world.gravity.scale = 0 //0.0019
 
+        this.layers.forEach(layer => this.sizeLayer(layer))
+
         this.entities = []
         this.shots = []
         this.objects = []
@@ -93,7 +95,6 @@ class Env {
         this.events = []
         this.renderingStack = []
         this.cursorPosition = new Vector(0, 0)
-        this.sizeCanvas()
         this.relToAbs = Math.min(this.width / this.gridWidth, this.height / this.gridHeight)
         this.mapWidth = this.map.dimensions.width * this.relToAbs
         this.mapHeight = this.map.dimensions.height * this.relToAbs
@@ -110,15 +111,16 @@ class Env {
         return [window.outerWidth, html.clientHeight]
     }
 
-    sizeCanvas(): void {
+    sizeLayer(layer: Layer): void {
+        const canvas: HTMLCanvasElement = layer.canvas
+        const ctx: CanvasRenderingContext2D = layer.ctx
         const dpr: number = window.devicePixelRatio || 1;
         [this.width, this.height] = this.getWindowDimensions()
         if (this.renderMode === 'local') {
-            [this.canvas.width, this.canvas.height] = [this.width * dpr, this.height * dpr];
-            [this.canvas.style.width, this.canvas.style.height] = [this.width + 'px', this.height + 'px'];
-            this.canvas.style.backgroundColor = colors.canvasBackground
-            document.querySelector('main').appendChild(this.canvas)
-            this.ctx.scale(dpr, dpr)
+            [canvas.width, canvas.height] = [this.width * dpr, this.height * dpr];
+            [canvas.style.width, canvas.style.height] = [this.width + 'px', this.height + 'px'];
+            // canvas.style.backgroundColor = colors.canvasBackground
+            ctx.scale(dpr, dpr)
         }
     }
 
@@ -215,7 +217,8 @@ class Env {
     }
 
     updateCursorPosition(evt: any) {
-        const rect = this.canvas.getBoundingClientRect()
+        const envLayer: Layer = this.layers.find(layer => layer.name === 'env')
+        const rect = envLayer.canvas.getBoundingClientRect()
         this.cursorPosition = new Vector(
             evt.clientX + this.camera.x - rect.left,
             evt.clientY + this.camera.y - rect.top
@@ -230,15 +233,17 @@ class Env {
         this.renderMode = this.renderMode === 'local' ? 'matter-js' : 'local'
         console.log('New render mode is', this.renderMode)
         if (this.renderMode === 'matter-js') {
-            this.canvas.style.display = 'none'
+            this.layers.forEach(layer => layer.hide())
             if (!this.renderer) {
                 this.renderer = Matter.Render.create({ element: document.body, engine: this.engine, options: renderOption })
             }
             Matter.Render.run(this.renderer)
         } else if (this.renderMode === 'local') {
             if (this.renderer) Matter.Render.stop(this.renderer)
-            this.canvas.style.display = 'inherit'
-            this.sizeCanvas()
+            this.layers.forEach(layer => {
+                layer.show()
+                this.sizeLayer(layer)
+            })
         }
     }
 
@@ -261,7 +266,7 @@ class Env {
         // Camera Guide
         let x1: number = this.camera.safe_zone.x1
         let x2: number = this.camera.safe_zone.x2
-        let renderObj: RenderObject = new RenderObject('line', x1, this.camera.width / 2, <RenderOptions>{ x2: x2, y2: this.camera.width / 2, interface: true })
+        let renderObj: RenderObject = new RenderObject('line', x1, this.camera.width / 2, 'debug', <RenderOptions>{ x2: x2, y2: this.camera.width / 2, interface: true })
         this.addToRenderingStack(renderObj)
 
         // Map render
@@ -283,7 +288,7 @@ class Env {
         this.shots.forEach(shot => {
             const pos: Matter.Vector = shot.body.position
             // let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices })
-            let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, <RenderOptions>{ vertices: shot.body.vertices, texture: BULLET_SPRITE })
+            let renderObj: RenderObject = new RenderObject('poly', pos.x, pos.y, 'shots', <RenderOptions>{ vertices: shot.body.vertices, texture: BULLET_SPRITE })
             this.addToRenderingStack(renderObj)
         })
 
@@ -307,9 +312,9 @@ class Env {
             }
         })
 
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        Renderer.render(this.renderingStack, this.ctx, this.camera)
-        Renderer.renderSprite(this.renderingStack, this.ctx, this.camera)
+        this.layers.forEach(layer => layer.clear())
+        Renderer.render(this.renderingStack, this.layers, this.camera)
+        Renderer.renderSprite(this.renderingStack, this.layers, this.camera)
     }
 }
 
