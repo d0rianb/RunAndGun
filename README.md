@@ -10,4 +10,4 @@ The game is in an early development state and look like this :
 A demo is available at this [url](https://d0rianb.github.io/RunAndGun/)
 
 #### Credits
-The game use Matter.js Physics Engine to run the world physics.
+The game uses Matter.js Physics Engine to run the world physics.
