@@ -81,6 +81,7 @@ function renderPoly(x: number, y: number, vertices: any[]): void {
     Renderer.poly(pointArray)
 }
 
+
 /*
 ENTITY BODY
 ________
@@ -129,6 +130,9 @@ abstract class Entity {
     health: number
     alive: boolean
 
+    playerHeadTexture: Texture
+    playerBodyTexture: Texture
+
 
     constructor(name: string, initialPos: Vector2, width: number, height: number, env: Env,) {
         this.name = name
@@ -152,6 +156,10 @@ abstract class Entity {
 
         this.createBody()
         this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
+
+        this.playerHeadTexture = new Texture('ressources/assets/sprite/player/player_head.png')
+        this.playerBodyTexture = new Texture('ressources/assets/sprite/player/player_body.png')
+
 
         Matter.Body.setMass(this.body, this.mass)
     }
@@ -239,6 +247,8 @@ abstract class Entity {
         Matter.Body.setAngle(this.playerArm, this.angle)
         Matter.Body.setInertia(this.body, Infinity)
         Matter.Body.setInertia(this.playerArm, Infinity)
+        this.playerHeadTexture.scale = new Vector2(sign, 1)
+        this.playerBodyTexture.scale = new Vector2(sign, 1)
     }
 
     distTo(player: Entity): number {
@@ -270,6 +280,7 @@ abstract class Entity {
     }
 
     render(): void {
+        if (!this.alive) return
         // @ts-ignore
         Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
         this.composite.bodies.forEach(body => {
@@ -278,11 +289,13 @@ abstract class Entity {
                     case 'PlayerRect':
                         renderPoly(part.position.x, part.position.y, part.vertices)
                         break
-                    case 'PlayerCircle':
-                        Renderer.circle(part.position.x, part.position.y, (<any>part).circleRadius)
-                        break
                     case 'ComposedBody':
                         renderPoly(part.position.x, part.position.y, part.vertices)
+                        Renderer.rectSprite(part.position.x - this.width / 2, part.position.y - this.height / 2, this.width, this.height * 2 / 3, this.playerBodyTexture)
+                        break
+                    case 'PlayerCircle':
+                        Renderer.circle(part.position.x, part.position.y, (<any>part).circleRadius)
+                        Renderer.circleSprite(part.position.x, part.position.y, (<any>part).circleRadius, this.playerHeadTexture)
                         break
                 }
             })

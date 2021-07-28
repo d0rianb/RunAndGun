@@ -159,6 +159,7 @@ class MapElement {
                 for (let i = 0; i < gridWidth; i++) {
                     for (let j = 0; j < gridHeight; j++) {
                         let gridCell = this.map.grid.getCell(gridX + i, gridY + j)
+                        gridCell.toggleActive(true)
                         this.tiles.push(new Tile(gridCell.x, gridCell.y, this))
                     }
                 }
@@ -181,6 +182,11 @@ class MapElement {
                 tile.y * this.env.relToAbs,
                 tile.width * this.env.relToAbs,
                 tile.height * this.env.relToAbs, { lineWidth: 1 })
+            Renderer.rectSprite(tile.x * this.env.relToAbs,
+                tile.y * this.env.relToAbs,
+                tile.width * this.env.relToAbs,
+                tile.height * this.env.relToAbs,
+                tile.texture)
         })
     }
 

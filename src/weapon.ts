@@ -2,7 +2,7 @@ import * as Matter from 'matter-js'
 
 import { Env } from './env'
 import { Player } from './player'
-import { Cooldown } from 'unrail-engine'
+import { Cooldown, Point, Renderer, Texture } from 'unrail-engine'
 
 import { constants } from '../ressources/static/constants.js'
 
@@ -101,25 +101,28 @@ class Shot {
     public dir: number
     public damage: number
     public speed: number
-    public size: number
+    public width: number
+    public height: number
     public weapon: Weapon
     public player: Player
     public env: Env
     public body: Matter.Body
+    private texture: Texture
 
     constructor(x, y, dir, dmg, speed, size, weapon) {
         this.id = shotIDPrefix + lastID
         lastID++
-        this.x = x
-        this.y = y
         this.dir = dir
         this.damage = dmg
         this.speed = speed
-        this.size = size
         this.weapon = weapon
         this.player = this.weapon.player
         this.env = this.player.env
-        this.body = Matter.Bodies.rectangle(this.x, this.y, this.size * this.env.relToAbs / 3, 6, {
+        this.width = size * this.env.relToAbs / 3
+        this.height = 6
+        this.x = x + this.width / 2
+        this.y = y - this.height
+        this.body = Matter.Bodies.rectangle(this.x, this.y, this.width, this.height, {
             label: 'Shot',
             id: this.id,
             friction: 0,
@@ -130,6 +133,7 @@ class Shot {
                 mask: COLLISION.collisionMask.shot
             }
         })
+        this.texture = new Texture('ressources/assets/sprite/bullet.png', { rotation: this.dir })
         Matter.Body.setInertia(this.body, Infinity)
         this.env.addShot(this)
     }
@@ -138,7 +142,6 @@ class Shot {
         let timescale: number = this.env.timescale
         const speed: number = this.speed * timescale
         Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
-        // Matter.Body.applyForce(this.body, this.body.position, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
         this.x = this.body.position.x
         this.y = this.body.position.y
         if (this.x > this.env.mapWidth
@@ -152,6 +155,12 @@ class Shot {
     destroy(): void {
         this.env.shots = this.env.shots.filter(shot => shot.id !== this.id)
         Matter.World.remove(this.env.world, this.body)
+    }
+
+    render(): void {
+        // const pointArray: Array<Point> = this.body.vertices.map(vertice => new Point(vertice.x, vertice.y))
+        // Renderer.poly(pointArray)
+        Renderer.rectSprite(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, this.texture)
     }
 }
 

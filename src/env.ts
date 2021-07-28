@@ -177,11 +177,7 @@ class Env {
         this.objects.forEach(obj => obj.render())
 
         // Shot render
-        this.shots.forEach(shot => {
-            const pos: Matter.Vector = shot.body.position
-            const pointArray: Array<Point> = shot.body.vertices.map(vertice => new Point(vertice.x, vertice.y))
-            Renderer.poly(pointArray)
-        })
+        this.shots.forEach(shot => shot.render())
 
         this.particles.forEach(particule => particule.render())
 
