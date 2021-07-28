@@ -4,7 +4,7 @@ import { Env } from './env'
 import { MapElement, ObjectOptions } from './object'
 import { Grid, Cell } from './grid'
 
-import { default as constants } from '../ressources/static/constants.json5'
+import { constants } from '../ressources/static/constants.js'
 
 const COLLISION = constants.physics.collision
 
@@ -45,13 +45,12 @@ class Map {
 
     init(env: Env): void {
         for (let objString of this.objects) {
-            let [type, strObjX, strObjY, strObjW, strObjH, ...objOptions] = objString.split(/[\s,]+/);
+            let [type, strObjX, strObjY, strObjW, strObjH, ...objOptions] = objString.trimLeft().split(/\s+/)
             if (type != 'format') {
                 let [objX, objY, objW, objH] = [parseInt(strObjX), parseInt(strObjY), parseInt(strObjW), parseInt(strObjH)]
-                let options: ObjectOptions = {
+                const options: ObjectOptions = {
                     label: 'Wall',
                     friction: 0.0001,
-                    chamfer: { radius: 0 },
                     mass: 5,
                     isStatic: objOptions.includes('static'),
                     frictionStatic: 0.1,

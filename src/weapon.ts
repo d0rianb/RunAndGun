@@ -2,9 +2,9 @@ import * as Matter from 'matter-js'
 
 import { Env } from './env'
 import { Player } from './player'
-import { Cooldown } from './events'
+import { Cooldown } from 'unrail-engine'
 
-import { default as constants } from '../ressources/static/constants.json5'
+import { constants } from '../ressources/static/constants.js'
 
 const COLLISION = constants.physics.collision
 

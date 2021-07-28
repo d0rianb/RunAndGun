@@ -1,37 +1,29 @@
 {
-  "name": "RunAndGun",
+  "name": "run-and-gun",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Mario was cool but he had no gun",
+  "main": "",
   "scripts": {
-    "scss": "sass --watch src/style/main.scss dist/main.css",
-    "dev": "NODE_ENV=dev webpack-dev-server --mode=development",
-    "build": "webpack --mode=production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "scss": "sass --watch style/",
+    "dev": "vite .",
+    "build": "vite build"
   },
   "dependencies": {
-    "file-loader": "^4.2.0",
     "json5": "^2.1.1",
-    "keydrown": "^1.2.7",
+    "keydrown": "^1.2.8",
     "matter-js": "^0.14.2",
-    "module-alias": "^2.2.2",
-    "typescript": "^3.5.3",
-    "url-loader": "^2.2.0"
+    "unrail-engine": "^0.4.8"
   },
   "devDependencies": {
     "@types/matter-js": "^0.10.2",
     "@types/node": "^12.7.2",
-    "@types/plotly.js": "^1.44.17",
-    "enhanced-resolve": "^4.1.1",
-    "json-loader": "^0.5.7",
-    "json5-loader": "^3.0.0",
-    "raw-loader": "^3.1.0",
-    "ts-loader": "^6.0.4",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7",
-    "webpack-dev-server": "^3.8.0"
+    "vite-plugin-live-reload": "^2.1.0"
   },
-  "keywords": [],
+  "keywords": [
+    "game",
+    "2d",
+    "unrail-engine"
+  ],
   "author": "Dorian <dorian.beauchesne@icloud.com>",
   "license": "ISC"
 }

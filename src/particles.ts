@@ -1,27 +1,26 @@
 import { Env } from './env'
-import { Vector } from './object'
-import { Cooldown } from './events'
-import { RenderObject, RenderOptions } from './render'
+
+import { Renderer, Cooldown, Vector2 } from 'unrail-engine'
 
 const GRAVITY: number = 1 // N
 const MAX_SPEED: number = 5
 
 class Particle {
     id: number
-    pos: Vector
-    velocity: Vector
+    pos: Vector2
+    velocity: Vector2
     env: Env
     color: string
     angle: number
     radius: number
     opacity: number
 
-    constructor(pos: Vector, env: Env) {
+    constructor(pos: Vector2, env: Env) {
         this.id = env.particles.length + 1
         this.env = env
-        this.pos = { x: pos.x, y: pos.y }
+        this.pos = new Vector2(pos.x, pos.y)
         this.angle = Math.PI / 2 + Math.random() * Math.PI
-        this.velocity = new Vector(Math.random() * MAX_SPEED * Math.cos(this.angle), Math.random() * MAX_SPEED * Math.sin(this.angle))
+        this.velocity = new Vector2(Math.random() * MAX_SPEED * Math.cos(this.angle), Math.random() * MAX_SPEED * Math.sin(this.angle))
         this.color = 'red'
         this.opacity = Math.random() * 255
         this.radius = 3
@@ -34,25 +33,24 @@ class Particle {
         this.pos.y += this.velocity.y * this.env.timescale
     }
 
-    render(env: Env): void {
-        let renderObject: RenderObject = new RenderObject('circle', this.pos.x, this.pos.y, <RenderOptions>{ radius: this.radius })
-        env.addToRenderingStack(renderObject)
+    render(): void {
+        Renderer.circle(this.pos.x, this.pos.y, this.radius)
     }
 }
 
 class Blood extends Particle {
-    constructor(pos: Vector, env: Env) {
+    constructor(pos: Vector2, env: Env) {
         super(pos, env)
     }
 }
 
 class ParticuleGenerator {
-    pos: Vector
+    pos: Vector2
     lifeDuration: number
     particles: Array<Particle>
     env: Env
 
-    constructor(nbParticles: number, pos: Vector, lifeDuration: number, env: Env) {
+    constructor(nbParticles: number, pos: Vector2, lifeDuration: number, env: Env) {
         this.pos = pos
         this.lifeDuration = lifeDuration
         this.particles = []

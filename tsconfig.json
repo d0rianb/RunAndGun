@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "dist/",
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -10,9 +9,8 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "strict": false,
-    "downlevelIteration": true,
     "target": "es6",
-    "allowJs": true,
+    "allowJs": true
   },
   "include": [
         "src/**/*"

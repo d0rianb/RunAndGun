@@ -1,0 +1,14 @@
+{
+  "name": "Map Test",
+  "dimensions": {
+    "width": "100",
+    "height": "25"
+  },
+  "grid": {
+    "width": "36",
+    "height": "18"
+  },
+  "objects": [
+    "format type       x     y     w     h    inertie    name"
+  ]
+}

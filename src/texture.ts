@@ -1,4 +1,4 @@
-import { Vector } from './object'
+import { Vector2, Texture } from 'unrail-engine'
 
 import { default as CENTER } from '../ressources/assets/tiles/CENTER.png'
 import { default as UP } from '../ressources/assets/tiles/UP.png'
@@ -10,48 +10,6 @@ import { default as PLAYER_BODY } from '../ressources/assets/sprite/player/playe
 import { default as PLAYER_HEAD } from '../ressources/assets/sprite/player/player_head.png'
 import { default as BULLET } from '../ressources/assets/sprite/bullet.png'
 
-class Vector2 {
-    x: number
-    y: number
-
-    constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
-    }
-}
-
-const V_NULL = new Vector2(0, 0)
-const V_UNIT = new Vector2(1, 1)
-
-interface TextureOptions {
-    rotation?: number, // radians
-    offset?: Vector2,
-    scale?: Vector2
-}
-
-
-class Texture {
-    image: HTMLImageElement
-    rotation: number
-    offset: Vector2
-    scale: Vector2
-    options: TextureOptions
-
-    constructor(source: string, options?: TextureOptions) {
-        this.image = new Image()
-        this.image.src = source
-        this.options = options || {}
-        this.rotation = this.options.rotation || 0
-        this.offset = this.options.offset || V_NULL
-        this.scale = this.options.scale || V_UNIT
-    }
-}
-
-class Sprite extends Texture {
-    constructor(source: string, options?: TextureOptions) {
-        super(source, options)
-    }
-}
 
 const UP_TEXTURE = new Texture(UP)
 const DOWN_TEXTURE = new Texture(UP, { rotation: Math.PI })
@@ -70,10 +28,10 @@ const BOTTOM_LEFT_TEXTURE = new Texture(CORNER, { rotation: -Math.PI / 2 })
 const BOTTOM_RIGHT_TEXTURE = new Texture(CORNER, { rotation: Math.PI })
 const CUBE_TEXTURE = new Texture(CUBE)
 
-const PLAYER_BODY_SPRITE = new Sprite(PLAYER_BODY)
-const PLAYER_HEAD_SPRITE = new Sprite(PLAYER_HEAD, { offset: new Vector2(-7, 0) })
+const PLAYER_BODY_SPRITE = new Texture(PLAYER_BODY)
+const PLAYER_HEAD_SPRITE = new Texture(PLAYER_HEAD, { offset: new Vector2(-7, 0) })
 
-const BULLET_SPRITE = new Sprite(BULLET, { scale: new Vector2(2, 2) })
+const BULLET_SPRITE = new Texture(BULLET, { scale: new Vector2(2, 2) })
 
 let TILE_TEXTURE = {
     UP: UP_TEXTURE,
@@ -95,4 +53,4 @@ let TILE_TEXTURE = {
 }
 
 
-export { Texture, Sprite, TILE_TEXTURE, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE, BULLET_SPRITE }
+export { TILE_TEXTURE, PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE, BULLET_SPRITE }

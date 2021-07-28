@@ -2,23 +2,10 @@ import * as Matter from 'matter-js'
 import { Env } from './env'
 import { Map } from './map'
 import { Grid, Cell } from './grid'
-import { RenderObject, RenderOptions } from './render'
-import { Texture, TILE_TEXTURE } from './texture'
+import { TILE_TEXTURE } from './texture'
 
+import { Renderer, Texture, Vector2 } from 'unrail-engine'
 
-function isNumber(value: any): boolean {
-    return (value != null) && !isNaN(Number(value.toString()))
-}
-
-class Vector {
-    x: number
-    y: number
-
-    constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
-    }
-}
 
 interface ObjectOptions extends Matter.IChamferableBodyDefinition {
     zIndex?: number
@@ -47,22 +34,17 @@ Texture type :
  - RIGHT
  - LEFT
  - MIDDLE
- - UP_RIGHT
- - UP_LEFT
- - DOWN-RIGHT
- - DOWN-LEFT
 */
 
 class Tile extends Cell {
-    parent: MapElement
     texture: Texture
     side: string
 
     constructor(x: number, y: number, parent: MapElement) {
         super(x, y, 1, 1)
-        this.parent = parent
-        let cell: Cell = this.parent.map.grid.getCell(this.x, this.y)
+        const cell: Cell = parent.map.grid.getCell(this.x, this.y)
         this.neighboor = cell.neighboor
+        this.texture = null
     }
 
     defineTexture(): void {
@@ -137,13 +119,9 @@ class Tile extends Cell {
             case 'DOWN-RIGHT':
                 this.texture = TILE_TEXTURE.DOWN_RIGHT
                 break
-			/* MISS :
-				UP-DOWN-RIGHT-LEFT
-				CORNERS
-			*/
         }
         if (!this.texture) {
-            console.log(this.side)
+            console.error(`Missing texture : ${this.side}`)
         }
     }
 
@@ -153,7 +131,7 @@ class MapElement {
     id: number
     type: string
     map: Map
-    pos: Vector
+    pos: Vector2
     width: number
     height: number
     isStatic: boolean
@@ -172,72 +150,38 @@ class MapElement {
         this.height = gridHeight * this.env.relToAbs
 
         this.tiles = []
-        this.pos = new Vector(gridX * this.env.relToAbs + this.width / 2, gridY * this.env.relToAbs + this.height / 2)
+        this.pos = new Vector2(gridX * this.env.relToAbs, gridY * this.env.relToAbs)
 
         switch (this.type) {
             case 'rect':
-                this.body = Matter.Bodies.rectangle(this.pos.x, this.pos.y, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options));
+                // ISSUE: Convert from centered rect to top-left corner rect
+                this.body = Matter.Bodies.rectangle(this.pos.x + this.width / 2, this.pos.y + this.height / 2, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
                 for (let i = 0; i < gridWidth; i++) {
                     for (let j = 0; j < gridHeight; j++) {
                         let gridCell = this.map.grid.getCell(gridX + i, gridY + j)
-                        gridCell.toggleActive(true)
                         this.tiles.push(new Tile(gridCell.x, gridCell.y, this))
                     }
                 }
-                (<ObjectRenderOptions>this.body.render).zIndex = this.isStatic ? 2 : 1
                 this.id = this.body.id
                 break
             case 'circle':
                 this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options));
-                (<ObjectRenderOptions>this.body.render).zIndex = this.isStatic ? 2 : 1
                 this.id = this.body.id
                 break
         }
-        this.env.objects.push(this)
-        Matter.World.add(this.env.world, this.body)
+        this.env.addObject(this)
     }
 
-    tileRender(): RenderObject[] {
-        let renderObjects: RenderObject[] = []
+    render(): void {
+        // @ts-ignore
+        // Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
         this.tiles.forEach(tile => {
-            renderObjects.push(new RenderObject(
-                'rect',
-                (tile.x + tile.width / 2) * this.env.relToAbs,
-                (tile.y + tile.height / 2) * this.env.relToAbs,
-                <RenderOptions>{
-                    width: tile.width * this.env.relToAbs,
-                    height: tile.height * this.env.relToAbs,
-                    texture: tile.texture
-                }
-            ))
+            Renderer.rect(
+                tile.x * this.env.relToAbs,
+                tile.y * this.env.relToAbs,
+                tile.width * this.env.relToAbs,
+                tile.height * this.env.relToAbs, { lineWidth: 1 })
         })
-        return renderObjects
-    }
-
-    toRender(): RenderObject | boolean {
-        switch (this.type) {
-            case 'rect':
-                return new RenderObject(
-                    'poly',
-                    this.body.position.x,
-                    this.body.position.y,
-                    <RenderOptions>{
-                        vertices: this.body.vertices,
-                        zIndex: this.isStatic ? 2 : 1
-                    }
-                )
-                break
-            case 'circle':
-                return new RenderObject(
-                    'circle',
-                    this.body.position.x,
-                    this.body.position.y,
-                    <RenderOptions>{ radius: (<any>this.body).circleRadius }
-                )
-                break
-        }
-
-        return false
     }
 
     update(): void { }
@@ -245,4 +189,4 @@ class MapElement {
 }
 
 
-export { MapElement, Vector, ObjectRenderOptions, ObjectOptions }
+export { MapElement, ObjectRenderOptions, ObjectOptions }
