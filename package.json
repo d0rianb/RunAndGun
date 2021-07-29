@@ -9,7 +9,6 @@
     "build": "vite build"
   },
   "dependencies": {
-    "keydrown": "^1.2.8",
     "matter-js": "^0.14.2",
     "unrail-engine": "^0.4.9"
   },

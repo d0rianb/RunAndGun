@@ -1,67 +1,15 @@
 import * as Matter from 'matter-js'
-import * as kd from 'keydrown'
 
-import { Point, Renderer, Texture, Vector2 } from 'unrail-engine'
+import { Point, Renderer, Texture, Vector2, Event } from 'unrail-engine'
 
 import { Env } from './env'
 import { Weapon, AR, SMG, Shot } from './weapon'
 import { DOMEvent, Cooldown } from './events'
 import { Particle, ParticuleGenerator } from './particles'
-import { PLAYER_BODY_SPRITE, PLAYER_HEAD_SPRITE } from './texture'
 
 import { default as setup } from '../ressources/static/config/setup.json'
 import { constants } from '../ressources/static/constants.js'
 
-const KEY_MAP = {
-    'ZERO': kd.ZERO,
-    'ONE': kd.ONE,
-    'TWO': kd.TWO,
-    'THREE': kd.THREE,
-    'FOUR': kd.FOUR,
-    'FIVE': kd.FIVE,
-    'SIX': kd.SIX,
-    'SEVEN': kd.SEVEN,
-    'EIGHT': kd.EIGHT,
-    'NINE': kd.NINE,
-    'A': kd.A,
-    'B': kd.B,
-    'C': kd.C,
-    'D': kd.D,
-    'E': kd.E,
-    'F': kd.F,
-    'G': kd.G,
-    'H': kd.H,
-    'I': kd.I,
-    'J': kd.J,
-    'K': kd.K,
-    'L': kd.L,
-    'M': kd.M,
-    'N': kd.N,
-    'O': kd.O,
-    'P': kd.P,
-    'Q': kd.Q,
-    'R': kd.R,
-    'S': kd.S,
-    'T': kd.T,
-    'U': kd.U,
-    'V': kd.V,
-    'W': kd.W,
-    'X': kd.X,
-    'Y': kd.Y,
-    'Z': kd.Z,
-    'ENTER': kd.ENTER,
-    'SHIFT': kd.SHIFT,
-    'ESC': kd.ESC,
-    'SPACE': kd.SPACE,
-    'LEFT': kd.LEFT,
-    'UP': kd.UP,
-    'RIGHT': kd.RIGHT,
-    'DOWN': kd.DOWN,
-    'BACKSPACE': kd.BACKSPACE,
-    'DELETE': kd.DELETE,
-    'TAB': kd.TAB,
-    'TILDE': kd.TILDE2
-}
 const MAX_SPEED = 12
 const SECOND_JUMP_COEFF = 0.8
 const SLOW_MOTION_DURATION = 600 //ms
@@ -354,44 +302,32 @@ class Player extends Entity {
     }
 
     initSetup(setup): void {
-        Object.keys(setup.keybind).forEach(key => {
-            let value: string = setup.keybind[key]
-            if (typeof value === 'string') {
-                this.assignKey(key, value)
-            } else if (typeof value === 'object') {
-                (value as Array<string>).forEach(key_bis => {
-                    this.assignKey(key, key_bis)
-                })
+        Object.keys(setup.keybind).forEach(action => {
+            const keys: string = setup.keybind[action]
+            switch (action) {
+                case 'move_forward':
+                    Event.onKeyDown(keys, () => this.move('right'))
+                    break
+                case 'move_backward':
+                    Event.onKeyDown(keys, () => this.move('left'))
+                    break
+                case 'jump':
+                    Event.onKeyPressed(keys, () => this.jump())
+                    break
+                case 'crouch':
+                    Event.onKeyPressed(keys, () => this.crouch())
+                    Event.onAnyKeyReleased(() => this.uncrouch())
+                    break
+                case 'dash':
+                    Event.onKeyPressed(keys, () => console.log('grappeln'))
+                    break
+                case 'reload':
+                    Event.onKeyPressed(keys, () => this.weapon.reload())
+                    break
             }
+            Event.onKeyPressed('KeyF', () => this.slowMotion())
+            Event.onKeyPressed('KeyE', () => this.autoShoot())
         })
-        kd.run(() => kd.tick())
-    }
-
-    assignKey(key: string, value: string): void {
-        let kd_key = KEY_MAP[value]
-        switch (key) {
-            case 'move_forward':
-                kd_key.down(() => this.move('right'))
-                break
-            case 'move_backward':
-                kd_key.down(() => this.move('left'))
-                break
-            case 'jump':
-                kd_key.press(() => this.jump())
-                break
-            case 'crouch':
-                kd_key.down(() => this.crouch())
-                kd_key.up(() => this.uncrouch())
-                break
-            case 'dash':
-                kd_key.press(() => console.log('grappeln'))
-                break
-            case 'reload':
-                kd_key.press(() => this.weapon.reload())
-                break
-        }
-        kd.F.press(() => this.slowMotion())
-        kd.E.press(() => this.autoShoot())
     }
 
     move(side: string): void {
