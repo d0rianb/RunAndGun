@@ -10,6 +10,10 @@ import { Particle, ParticuleGenerator } from './particles'
 import { default as setup } from '../ressources/static/config/setup.json'
 import { constants } from '../ressources/static/constants.js'
 
+import { default as PLAYER_BODY } from '../ressources/assets/sprite/player/player_body.png'
+import { default as PLAYER_HEAD } from '../ressources/assets/sprite/player/player_head.png'
+
+
 const MAX_SPEED = 12
 const SECOND_JUMP_COEFF = 0.8
 const SLOW_MOTION_DURATION = 600 //ms
@@ -105,8 +109,8 @@ abstract class Entity {
         this.createBody()
         this.dir = this.env.cursorPosition.x > this.body.position.x ? 'left' : 'right'
 
-        this.playerHeadTexture = new Texture('ressources/assets/sprite/player/player_head.png')
-        this.playerBodyTexture = new Texture('ressources/assets/sprite/player/player_body.png')
+        this.playerHeadTexture = new Texture(PLAYER_HEAD)
+        this.playerBodyTexture = new Texture(PLAYER_BODY)
 
 
         Matter.Body.setMass(this.body, this.mass)

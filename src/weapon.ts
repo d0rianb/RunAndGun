@@ -6,6 +6,8 @@ import { Cooldown, Point, Renderer, Texture } from 'unrail-engine'
 
 import { constants } from '../ressources/static/constants.js'
 
+import { default as SHOT } from '../ressources/assets/sprite/bullet.png'
+
 const COLLISION = constants.physics.collision
 
 const shotIDPrefix = 1000
@@ -133,7 +135,7 @@ class Shot {
                 mask: COLLISION.collisionMask.shot
             }
         })
-        this.texture = new Texture('ressources/assets/sprite/bullet.png', { rotation: this.dir })
+        this.texture = new Texture(SHOT, { rotation: this.dir })
         Matter.Body.setInertia(this.body, Infinity)
         this.env.addShot(this)
     }
