@@ -166,7 +166,7 @@ class MapElement {
                 this.id = this.body.id
                 break
             case 'circle':
-                this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options));
+                this.body = Matter.Bodies.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2, Object.assign({ isStatic: this.isStatic }, options))
                 this.id = this.body.id
                 break
         }
@@ -175,7 +175,7 @@ class MapElement {
 
     render(): void {
         // @ts-ignore
-        // Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
+        Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
         this.tiles.forEach(tile => {
             Renderer.rect(
                 tile.x * this.env.relToAbs,
@@ -188,9 +188,14 @@ class MapElement {
                 tile.height * this.env.relToAbs,
                 tile.texture)
         })
+        if (this.type === 'circle') {
+            Renderer.circle(this.pos.x, this.pos.y, (this.width + this.height) / 2)
+        }
     }
 
-    update(): void { }
+    update(): void {
+        if (!this.isStatic) this.pos = new Vector2(this.body.position.x, this.body.position.y)
+    }
 
 }
 
