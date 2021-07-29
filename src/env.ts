@@ -161,7 +161,7 @@ class Env {
         this.camera.update()
         this.render()
         this.tick++
-        requestAnimationFrame(() => this.update())
+        // requestAnimationFrame(() => this.update())
     }
 
     render(): void {

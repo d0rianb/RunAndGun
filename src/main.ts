@@ -20,9 +20,8 @@ import { Renderer, Game, getWindowDimensions, createCanvas } from 'unrail-engine
 import { default as mapFile } from '../ressources/static/map/map-1.json'
 import { MapElement } from './object'
 
-// const game = new Game()
-// game.setMainLoop(() => { })
-// game.start()
+const game = new Game('RunAndGun')
+
 
 const { width, height } = getWindowDimensions()
 const canvas: HTMLCanvasElement = Renderer.create()
@@ -30,19 +29,21 @@ const canvas: HTMLCanvasElement = Renderer.create()
 const map1: Map = new Map(mapFile)
 
 window.onload = () => {
-    let env: Env = new Env(canvas, map1)
+    const env: Env = new Env(canvas, map1)
 
-    let player: Player = new Player('Dorian', 300, 200, 50, 80, env, true)
-    let enemy1: Enemy = new Enemy('Bad Guy', 200, 200, 40, 88, env)
-    let enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env);
+    const player: Player = new Player('Dorian', 300, 200, 50, 80, env, true)
+    const enemy1: Enemy = new Enemy('Bad Guy', 200, 200, 40, 88, env)
+    const enemy2: Enemy = new Enemy('Bad Guy 2 ', 2200, 200, 40, 88, env);
 
 
     (<any>window).env = env;
     (<any>window).player = player;
     (<any>window).enemy1 = enemy1;
 
-    env.update()
     canvas.focus()
+    game.setMainLoop(() => env.update())
+    game.start()
+}
     // const render = Matter.Render.create({
     //     canvas,
     //     engine: env.engine,
@@ -52,5 +53,4 @@ window.onload = () => {
     //     Matter.Render.stop(render)
     //     canvas.style.background = 'none'
     // }, 3500)
-}
 

@@ -154,8 +154,8 @@ class MapElement {
 
         switch (this.type) {
             case 'rect':
-                // ISSUE: Convert from centered rect to top-left corner rect
-                this.body = Matter.Bodies.rectangle(this.pos.x + this.width / 2, this.pos.y + this.height / 2, this.width, this.height, Object.assign({ isStatic: this.isStatic }, options))
+                // ISSUE SOLVED: Convert from centered rect to top-left corner rect
+                this.body = Matter.Bodies.rectangle(this.pos.x + this.width / 2, this.pos.y + this.height / 2, this.width, this.height, options)
                 for (let i = 0; i < gridWidth; i++) {
                     for (let j = 0; j < gridHeight; j++) {
                         let gridCell = this.map.grid.getCell(gridX + i, gridY + j)

@@ -304,9 +304,11 @@ abstract class Entity {
 
     update(): void {
         if (!this.alive) return
+        if (!this.env) return
 
         /* Colision Detection */
         this.onAir = this.env.objects.filter(obj => {
+            if (!obj) return
             let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
             return collision.collided && collision.axisNumber === 0
         }).length === 0
@@ -477,16 +479,21 @@ class Player extends Entity {
 
     update(): void {
         if (!this.alive) return
+        if (!this.env) return
         this.lookAt(this.env.cursorPosition)
 
         /* Collision Detection */
+        // OPTIMIZE: Mater SAT previousCollision 
         this.onAir = this.env.objects.filter(obj => {
+            if (!obj.body || !this.jumpSensor) return false
             let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
             return collision.collided && collision.axisNumber === 0
         }).length === 0
 
-        let collidingWall = this.env.objects.filter(obj => {
+        let collidingWall: boolean = this.env.objects.filter(obj => {
+            if (!obj.body) return false
             let collision = (Matter as any).SAT.collides(obj.body, this.jumpSensor)
+            if (!('position' in obj.body)) return console.log(obj)
             if (collision.collided && collision.axisNumber === 1) {
                 this.wallSlideSide = collision.bodyA.position.x > collision.bodyB.position.x ? 'left' : 'right'
                 return true

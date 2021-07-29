@@ -50,7 +50,7 @@ class Map {
                 let [objX, objY, objW, objH] = [parseInt(strObjX), parseInt(strObjY), parseInt(strObjW), parseInt(strObjH)]
                 const options: ObjectOptions = {
                     label: 'Wall',
-                    friction: 0.0001,
+                    friction: 0.001,
                     mass: 5,
                     isStatic: objOptions.includes('static'),
                     frictionStatic: 0.1,
