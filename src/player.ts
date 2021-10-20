@@ -1,6 +1,6 @@
 import * as Matter from 'matter-js'
 
-import { Point, Renderer, Texture, Vector2, Event } from 'unrail-engine'
+import { Point, Renderer, Texture, Vector2, Event, Interface } from 'unrail-engine'
 
 import { Env } from './env'
 import { Weapon, AR, SMG, Shot } from './weapon'
@@ -288,6 +288,7 @@ class Player extends Entity {
     private wallSlideSide: string
     private nbJump: number
     public weapon: Weapon
+    private debugArray: Array<string> = ['Hey']
 
     constructor(name: string, x: number, y: number, width: number, height: number, env: Env, cameraFocus: boolean = false) {
         super(name, new Vector2(x + width / 2, y + height / 2), width, height, env)
@@ -302,6 +303,8 @@ class Player extends Entity {
         this.env.events.push(new DOMEvent('mouseup', () => this.weapon.stopShoot()))
 
         this.env.addEntity(this)
+        Interface.addItem(() => this.debugArray.join('\n'), 'top-left')
+        console.log(Interface.getItems())
         this.initSetup(setup)
     }
 
@@ -468,7 +471,7 @@ class Player extends Entity {
 
     render(): void {
         super.render()
-        const debugArray = [
+        this.debugArray = [
             `motion: ${this.body.motion.toFixed(3)}`,
             `speed: ${this.body.speed.toFixed(3)}`,
             `velocity: {x: ${this.body.velocity.x.toFixed(0)}, y: ${this.body.velocity.y.toFixed(0)}}`,
@@ -487,7 +490,7 @@ class Player extends Entity {
             `camera : ${this.env.camera.x.toFixed(2)}, ${this.env.camera.y.toFixed(2)}`,
             `number of bodies: ${Matter.Composite.allBodies(this.env.world).length}`
         ]
-        debugArray.forEach((text, i) => Renderer.text(text, 10, 15 * (i + 1)))
+        // debugArray.forEach((text, i) => Renderer.text(text, 10, 15 * (i + 1)))
     }
 }
 

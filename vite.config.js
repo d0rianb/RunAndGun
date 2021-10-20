@@ -1,4 +1,3 @@
-import path from 'path'
 import liveReload from 'vite-plugin-live-reload'
 
 export default {

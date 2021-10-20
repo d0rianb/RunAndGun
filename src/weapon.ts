@@ -10,7 +10,7 @@ import { default as SHOT } from '../ressources/assets/sprite/bullet.png'
 
 const COLLISION = constants.physics.collision
 
-const shotIDPrefix = 1000
+const shotIDPrefix: number = 1000
 var lastID: number = 0
 
 class Weapon {
@@ -34,7 +34,7 @@ class Weapon {
     protected canShoot: boolean
     protected autofire: boolean
 
-    constructor(player) {
+    constructor(player: Player) {
         this.player = player
         this.name = 'Unknown'
         this.fireRange = Infinity
@@ -65,15 +65,9 @@ class Weapon {
         const shot = new Shot(x, y, this.player.angle, this.shootDamage, this.shootSpeed, this.ammoSize, this)
         this.nbAmmo -= 1
         this.canShoot = false
-        let shotCooldown: Cooldown = new Cooldown(1000 / this.fireRate, () => {
-            this.canShoot = true
-        })
-        if (!auto) {
-            this.autofire = true
-        }
-        if (this.autofire) {
-            new Cooldown(1000 / this.fireRate, () => this.shoot(true))
-        }
+        let shotCooldown: Cooldown = new Cooldown(1000 / this.fireRate, () => this.canShoot = true)
+        if (!auto) this.autofire = true
+        if (this.autofire) new Cooldown(1000 / this.fireRate, () => this.shoot(true))
         return shot
     }
 
@@ -141,15 +135,15 @@ class Shot {
     }
 
     update(): void {
-        let timescale: number = this.env.timescale
-        const speed: number = this.speed * timescale
+        const speed: number = this.speed * this.env.timescale
         Matter.Body.translate(this.body, <Matter.Vector>{ x: Math.cos(this.dir) * speed, y: Math.sin(this.dir) * speed })
         this.x = this.body.position.x
         this.y = this.body.position.y
         if (this.x > this.env.mapWidth
             || this.x < -500
             || this.y > this.env.mapHeight
-            || this.y < 0) {
+            || this.y < 0
+            || this.speed === 0) {
             this.destroy()
         }
     }

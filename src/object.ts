@@ -175,7 +175,7 @@ class MapElement {
 
     render(): void {
         // @ts-ignore
-        Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
+        // Renderer.rectFromPoints(this.body.bounds.min.x, this.body.bounds.min.y, this.body.bounds.max.x, this.body.bounds.max.y, { strokeStyle: 'red' })
         this.tiles.forEach(tile => {
             Renderer.rect(
                 tile.x * this.env.relToAbs,

@@ -19,8 +19,8 @@ import { Renderer, Game, getWindowDimensions, createCanvas } from 'unrail-engine
 
 import { default as mapFile } from '../ressources/static/map/map-1.json'
 
-const game = new Game('RunAndGun')
 
+const game = new Game('RunAndGun')
 
 const { width, height } = getWindowDimensions()
 const canvas: HTMLCanvasElement = Renderer.create()
